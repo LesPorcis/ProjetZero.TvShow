@@ -1,5 +1,86 @@
+## .NET
 bin/
 obj/
-/packages/
+out/
+
+## User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+project.fragment.lock.json
+
+## Visual Studio / MSBuild
+.vs/
+*.csproj.user
+*.dbmdl
+*.jfm
+*.pfx
+*.publishsettings
+launchSettings.json
+
+## Rider / JetBrains
+.idea/
+*.sln.iml
 riderModule.iml
-/_ReSharper.Caches/
+_ReSharper.Caches/
+
+## ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+## dotCover
+*.dotCover
+
+## NCrunch
+_NCrunch_*
+.*crunch*.local.xml
+nCrunchTemp_*
+
+## Publish / deploy
+*.Publish.xml
+PublishScripts/
+
+## Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+## macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+## Linux
+*~
+
+## Environment / secrets
+*.env
+appsettings.Development.json
+appsettings.Local.json
