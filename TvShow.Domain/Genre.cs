@@ -12,5 +12,8 @@ public class Genre
     
     public string Description { get; set; } = string.Empty;
     
+    /// <summary>
+    /// Test PR
+    /// </summary>
     public IReadOnlyCollection<TvShow> TvShow { get; set; } = new  List<TvShow>();
 }
