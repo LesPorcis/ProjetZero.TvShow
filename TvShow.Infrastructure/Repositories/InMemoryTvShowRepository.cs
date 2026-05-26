@@ -1,4 +1,4 @@
-using TvShow.Application.Ports;
+using TvShow.Application.Ports.Out;
 using TvShowEntity = TvShow.Domain.TvShow;
 
 namespace TvShow.Infrastructure.Repositories;

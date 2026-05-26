@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using TvShow.Application.Ports;
+using TvShow.Application.Ports.Out;
 using TvShow.Infrastructure.Repositories;
 
 namespace TvShow.Infrastructure;

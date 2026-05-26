@@ -12,7 +12,7 @@ public class TvShow
     public int Episodes { get; set; }
     
     public IReadOnlyCollection<Director> Directors { get; set; } = new List<Director>();
-    public IReadOnlyCollection<Writer> Writers { get; set; }  = new List<Writer>();
-    public IReadOnlyCollection<Star> Stars { get; set; }  = new List<Star>();
+    public IReadOnlyCollection<Writer> Writers { get; set; } = new List<Writer>();
+    public IReadOnlyCollection<Star> Stars { get; set; } = new List<Star>();
     public IReadOnlyCollection<Genre> Genres { get; set; } = new List<Genre>();
 }

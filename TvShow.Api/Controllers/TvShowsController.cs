@@ -1,17 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
 using TvShow.Application.Models;
-using TvShow.Application.Services;
+using TvShow.Application.Ports.In;
 
 namespace TvShow.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public sealed class TvShowsController(TvShowManager tvShowManager) : ControllerBase
+public sealed class TvShowsController(IListTvShowsUseCase listTvShowsUseCase ) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyCollection<TvShowResponse>>> GetAll(CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyList<TvShowResponse>>> GetAll(CancellationToken cancellationToken)
     {
-        var tvShows = await tvShowManager.GetAllAsync(cancellationToken);
+        var tvShows = await listTvShowsUseCase.ExecuteAsync();
 
         return Ok(tvShows);
     }
