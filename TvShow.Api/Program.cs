@@ -17,6 +17,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    //TODO: Delete scalar and replace with Swagger (default)
     app.MapScalarApiReference();
 }
 
