@@ -1,7 +1,7 @@
 ## .NET
 bin/
 obj/
-out/
+/out/
 
 ## User-specific files
 *.rsuser
