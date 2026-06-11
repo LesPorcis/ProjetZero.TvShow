@@ -4,7 +4,7 @@ using TvShow.Application.Ports.Out;
 
 namespace TvShow.Application.UseCases.ListTvShows;
 
-public class ListTvShowsUseCase : IListTvShowsUseCase
+internal sealed class ListTvShowsUseCase : IListTvShowsUseCase
 {
     private readonly ITvShowRepository _repository;
 
