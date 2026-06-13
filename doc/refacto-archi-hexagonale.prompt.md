@@ -118,24 +118,29 @@ ces ports.
 
 ### 3.3 `TvShow.Application` — ports & use cases propres
 - **Port Out** `ITvShowRepository` : renvoie des entités de **domaine**
-  (`IReadOnlyList<TvShow>`), `CancellationToken` en paramètre.
-- **Port In** `IListTvShowsUseCase` : renvoie un **DTO applicatif** technologiquement neutre
-  (ex. `ListTvShowsResult` / `TvShowSummary`), pas une entité de domaine ni un contrat HTTP.
-- `ListTvShowsUseCase` (`internal sealed`) : mappe domaine → DTO applicatif et **propage le
-  `CancellationToken`** jusqu'au repository.
-- **Harmoniser** les types de collection (`IReadOnlyList<…>` partout par défaut).
-- Retirer de cette couche tout ce qui est contrat HTTP (voir 3.4).
+  (`IReadOnlyCollection<TvShow.Domain.TvShow>`), `CancellationToken` en paramètre, **sans
+  alias** (type qualifié `TvShow.Domain.TvShow`, plus de `using TvShowEntity = …`).
+- **Port In** `IListTvShowsUseCase` : renvoie **directement des entités de domaine**
+  (`IReadOnlyCollection<TvShow.Domain.TvShow>`). Décision actée (PR #5, commentaire
+  « Pourquoi renvoyer un objet transformé et pas un objet de `Domain` ? ») : **pas de DTO
+  applicatif** intermédiaire ; la transformation en contrat de sortie a lieu côté API
+  (ViewModel, §3.4).
+- `ListTvShowsUseCase` : **primary constructor**
+  (`internal sealed class ListTvShowsUseCase(ITvShowRepository repository) : IListTvShowsUseCase`)
+  et **propage le `CancellationToken`** jusqu'au repository (ici simple délégation).
+- **Supprimer** `TvShow.Application.Models.TvShowResponse` (contrat web inutile à ce niveau).
+- **Harmoniser** les types de collection : `IReadOnlyCollection<…>` partout (In/Out).
 
 ### 3.4 `TvShow.Api` — adaptateur web avec ses propres ViewModels
 - **ViewModels d'API dédiés** dans `TvShow.Api/ViewModels` (ex. `TvShowViewModel`) : c'est le
-  contrat HTTP de sortie, **distinct** du DTO applicatif. `TvShowResponse` quitte
-  `TvShow.Application.Models` (le contrat web ne vit plus dans `Application`).
+  contrat HTTP de sortie, **distinct** de l'entité de domaine. `TvShowResponse` est **supprimé**
+  (plus aucun contrat web dans `Application`).
 - **Mappers simples** dans `TvShow.Api/Mappers` : méthodes d'extension statiques, code de
-  mapping **explicite** (pas de bibliothèque type AutoMapper) DTO applicatif → ViewModel.
+  mapping **explicite** (pas de bibliothèque type AutoMapper) entité de domaine → ViewModel.
 - `TvShowsController` :
   - **route explicite** `[Route("api/tvshows")]` (plus de token `[controller]`, donc fin du
     `/api/TvShows` PascalCase) ;
-  - renvoie `IReadOnlyList<TvShowViewModel>`, **mappe** le DTO applicatif → ViewModel ;
+  - renvoie `IReadOnlyCollection<TvShowViewModel>`, **mappe** l'entité de domaine → ViewModel ;
   - **propage le `CancellationToken`** reçu jusqu'au use case ;
   - `[Produces("application/json")]` + `[ProducesResponseType<…>(200)]` pour un contrat HTTP
     net (un seul content-type, type de réponse explicite).
@@ -164,11 +169,12 @@ ces ports.
 3. **Créer `TvShowDao` + mapping** dans `Infrastructure` ; déplacer attributs/navigation EF
    vers les DAO. Adapter `InMemoryTvShowRepository` (DAO → domaine, `internal`, token).
    Compiler.
-4. **Nettoyer Application** : port In renvoie un DTO applicatif, port Out renvoie le domaine,
-   propager le token, harmoniser les collections. Compiler.
+4. **Nettoyer Application** : ports In **et** Out renvoient des **objets de domaine** (type
+   qualifié, sans alias), use case en primary constructor, propager le token, harmoniser les
+   collections sur `IReadOnlyCollection`, supprimer `TvShowResponse`. Compiler.
 5. **Couche API** : créer les **ViewModels** (`TvShow.Api/ViewModels`) + **mappers simples**
-   (`TvShow.Api/Mappers`), route **explicite** `api/tvshows`, le controller mappe DTO
-   applicatif → ViewModel et **propage le token**. Compiler.
+   (`TvShow.Api/Mappers`), route **explicite** `api/tvshows`, le controller mappe l'entité
+   de domaine → ViewModel et **propage le token**. Compiler.
 6. **OpenAPI** : retirer Scalar, générer un **`openapi.json` propre au build** (un seul
    content-type, route `/api/tvshows`) et vérifier l'endpoint.
 
@@ -185,8 +191,9 @@ ces ports.
 - [ ] Les entités de domaine sont encapsulées (pas de setter public nu ; invariants validés).
 - [ ] Le `CancellationToken` est propagé de bout en bout (controller → use case → repository).
 - [ ] Le **ViewModel** de sortie (`TvShowViewModel`) est défini dans `TvShow.Api/ViewModels`
-      et mappé depuis le DTO applicatif via un mapper simple (`TvShow.Api/Mappers`) ; le port
-      In renvoie un DTO applicatif ; le port Out renvoie des entités de domaine.
+      et mappé depuis l'**entité de domaine** via un mapper simple (`TvShow.Api/Mappers`) ;
+      les ports In **et** Out renvoient des entités de domaine (pas de DTO applicatif,
+      `TvShowResponse` supprimé) ; collections en `IReadOnlyCollection`.
 - [ ] Un `openapi.json` **propre** est généré au build (un seul content-type
       `application/json`, route `/api/tvshows`, schéma `TvShowViewModel`) ; Scalar est retiré.
 - [ ] Les adaptateurs (`InMemoryTvShowRepository`) sont `internal`, exposés via leur
