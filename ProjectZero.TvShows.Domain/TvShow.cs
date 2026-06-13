@@ -1,9 +1,5 @@
 namespace ProjectZero.TvShows.Domain;
 
-/// <summary>
-/// Entité de domaine représentant une série télévisée.
-/// Immuable : propriétés en lecture seule, valeurs fixées à la construction.
-/// </summary>
 public sealed class TvShow
 {
     public TvShow(

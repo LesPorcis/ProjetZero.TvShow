@@ -33,7 +33,6 @@ internal sealed class TvShowDao : IEntityTypeConfiguration<TvShowDao>
         builder.HasMany(tvShow => tvShow.Genres).WithMany(genre => genre.TvShows)
             .UsingEntity(join => join.ToTable("TvShowGenres"));
 
-        // Données de référence (seed) — préserve le comportement de GET /api/tvshows.
         builder.HasData(
             new TvShowDao
             {

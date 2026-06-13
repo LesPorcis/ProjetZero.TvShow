@@ -3,9 +3,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ProjectZero.Database.Daos;
 
-/// <summary>
-/// Entité de persistance des acteurs. Interne au projet base de données.
-/// </summary>
 internal sealed class StarDao : IEntityTypeConfiguration<StarDao>
 {
     public int Id { get; set; }

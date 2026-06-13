@@ -3,9 +3,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ProjectZero.Database.Daos;
 
-/// <summary>
-/// Entité de persistance des genres. Interne au projet base de données.
-/// </summary>
 internal sealed class GenreDao : IEntityTypeConfiguration<GenreDao>
 {
     public int Id { get; set; }
@@ -22,7 +19,6 @@ internal sealed class GenreDao : IEntityTypeConfiguration<GenreDao>
             .HasMaxLength(128)
             .IsRequired();
 
-        // Unicité du nom de genre.
         builder.HasIndex(genre => genre.Name).IsUnique();
 
         builder.Property(genre => genre.Description)

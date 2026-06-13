@@ -3,11 +3,6 @@ using Microsoft.EntityFrameworkCore.Design;
 
 namespace ProjectZero.Database;
 
-/// <summary>
-/// Fabrique design-time utilisée par les outils EF Core (<c>dotnet ef migrations</c>).
-/// Le runtime, lui, construit le contexte via <c>AddInfrastructure</c> + DI.
-/// Interne : découverte par réflexion des outils EF, jamais exposée à l'application.
-/// </summary>
 internal sealed class TvShowDbContextFactory : IDesignTimeDbContextFactory<TvShowDbContext>
 {
     private const string DefaultConnectionString =

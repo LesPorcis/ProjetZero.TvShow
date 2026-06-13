@@ -15,8 +15,6 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2" />
   </ItemGroup>
 
-  <!-- Encapsulation : les DAO et le DbContext restent internes ; seul l'adaptateur
-       d'infrastructure peut les voir pour câbler les ports secondaires. -->
   <ItemGroup>
     <InternalsVisibleTo Include="ProjectZero.TvShows.Infrastructure" />
   </ItemGroup>

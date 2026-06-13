@@ -3,9 +3,6 @@ using ProjectZero.TvShows.Domain;
 
 namespace ProjectZero.TvShows.Api.Mappers;
 
-/// <summary>
-/// Mapping simple et explicite entité de domaine → ViewModel d'API.
-/// </summary>
 internal static class TvShowMappings
 {
     public static TvShowViewModel ToViewModel(this TvShow series) =>

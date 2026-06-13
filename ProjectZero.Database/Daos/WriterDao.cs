@@ -3,9 +3,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ProjectZero.Database.Daos;
 
-/// <summary>
-/// Entité de persistance des scénaristes. Interne au projet base de données.
-/// </summary>
 internal sealed class WriterDao : IEntityTypeConfiguration<WriterDao>
 {
     public int Id { get; set; }

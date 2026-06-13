@@ -7,18 +7,12 @@ using ProjectZero.TvShows.Infrastructure.Repositories;
 
 namespace ProjectZero.TvShows.Infrastructure;
 
-/// <summary>
-/// Méthode d'extension pour ajouter les services d'infrastructure.
-/// Seule surface publique de la couche : les adaptateurs restent internes.
-/// </summary>
 public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // Provider sélectionnable par configuration (défaut : InMemory).
-        // Persistence:Provider = InMemory | Postgres
         var provider = configuration["Persistence:Provider"] ?? "InMemory";
 
         if (string.Equals(provider, "Postgres", StringComparison.OrdinalIgnoreCase))

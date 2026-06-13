@@ -3,9 +3,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ProjectZero.Database.Daos;
 
-/// <summary>
-/// Entité de persistance des réalisateurs. Interne au projet base de données.
-/// </summary>
 internal sealed class DirectorDao : IEntityTypeConfiguration<DirectorDao>
 {
     public int Id { get; set; }
