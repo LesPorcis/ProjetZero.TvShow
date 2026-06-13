@@ -11,14 +11,11 @@ internal static class TvShowMapper
         dao.ReleasedAt,
         dao.Seasons,
         dao.Episodes,
-        dao.Directors.Select(d => d.ToDomain()).ToList(),
-        dao.Writers.Select(w => w.ToDomain()).ToList(),
-        dao.Stars.Select(s => s.ToDomain()).ToList(),
-        dao.Genres.Select(g => g.ToDomain()).ToList());
+        dao.Directors.ToDomains(),
+        dao.Writers.ToDomains(),
+        dao.Stars.ToDomains(),
+        dao.Genres.ToDomains());
 
-    private static Writer ToDomain(this WriterDao dao) => new(dao.Id, dao.FirstName, dao.LastName);
-
-    private static Star ToDomain(this StarDao dao) => new(dao.Id, dao.FirstName, dao.LastName);
-
-    public static Genre ToDomain(this GenreDao dao) => new(dao.Id, dao.Name, dao.Description);
+    public static IReadOnlyCollection<TvShow> ToDomains(this IEnumerable<TvShowDao> daos) =>
+        daos.Select(dao => dao.ToDomain()).ToList();
 }

@@ -22,8 +22,6 @@ internal sealed class TvShowsRepository(TvShowDbContext dbContext) : ITvShowsRep
         var daos = await ReadOnlySet()
             .ToListAsync(cancellationToken);
 
-        return daos
-            .Select(t => t.ToDomain())
-            .ToList();
+        return daos.ToDomains();
     }
 }
