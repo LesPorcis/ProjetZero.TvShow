@@ -1,18 +1,21 @@
 using Microsoft.AspNetCore.Mvc;
-using TvShow.Application.Models;
+using TvShow.Api.Mappers;
+using TvShow.Api.ViewModels;
 using TvShow.Application.Ports.In;
 
 namespace TvShow.Api.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
-public sealed class TvShowsController(IListTvShowsUseCase listTvShowsUseCase ) : ControllerBase
+[Route("api/tvshows")]
+[Produces("application/json")]
+public sealed class TvShowsController(IListTvShowsUseCase listTvShowsUseCase) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<TvShowResponse>>> GetAll(CancellationToken cancellationToken)
+    [ProducesResponseType<IReadOnlyList<TvShowViewModel>>(StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<TvShowViewModel>>> GetAll(CancellationToken cancellationToken)
     {
-        var tvShows = await listTvShowsUseCase.ExecuteAsync();
+        var tvShows = await listTvShowsUseCase.ExecuteAsync(cancellationToken);
 
-        return Ok(tvShows);
+        return Ok(tvShows.ToViewModels());
     }
 }
