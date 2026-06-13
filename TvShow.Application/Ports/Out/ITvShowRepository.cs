@@ -1,6 +1,8 @@
+using TvShow.Domain;
+
 namespace TvShow.Application.Ports.Out;
 
 public interface ITvShowRepository
 {
-    Task<IReadOnlyCollection<TvShow.Domain.TvShow>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyCollection<Series>> GetAllAsync(CancellationToken cancellationToken = default);
 }

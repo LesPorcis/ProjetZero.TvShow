@@ -1,16 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations;
-
 namespace TvShow.Domain;
 
-public class Director
+public sealed class Director
 {
-    [Required]
-    public int Id { get; set; }
-    /// <summary>
-    /// TEsts
-    /// </summary>
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-    
-    public IReadOnlyCollection<TvShow> TvShow { get; set; } = new  List<TvShow>();
+    public Director(int id, string firstName, string lastName)
+    {
+        Id = id;
+        FirstName = firstName;
+        LastName = lastName;
+    }
+
+    public int Id { get; }
+    public string FirstName { get; }
+    public string LastName { get; }
 }

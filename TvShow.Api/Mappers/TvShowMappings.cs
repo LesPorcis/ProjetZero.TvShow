@@ -1,4 +1,5 @@
 using TvShow.Api.ViewModels;
+using TvShow.Domain;
 
 namespace TvShow.Api.Mappers;
 
@@ -7,14 +8,14 @@ namespace TvShow.Api.Mappers;
 /// </summary>
 internal static class TvShowMappings
 {
-    public static TvShowViewModel ToViewModel(this TvShow.Domain.TvShow tvShow) =>
+    public static TvShowViewModel ToViewModel(this Series series) =>
         new(
-            tvShow.Id,
-            tvShow.Name,
-            tvShow.ReleasedAt,
-            tvShow.Seasons,
-            tvShow.Episodes);
+            series.Id,
+            series.Name,
+            series.ReleasedAt,
+            series.Seasons,
+            series.Episodes);
 
-    public static IReadOnlyCollection<TvShowViewModel> ToViewModels(this IEnumerable<TvShow.Domain.TvShow> tvShows) =>
-        tvShows.Select(ToViewModel).ToList();
+    public static IReadOnlyCollection<TvShowViewModel> ToViewModels(this IEnumerable<Series> series) =>
+        series.Select(ToViewModel).ToList();
 }

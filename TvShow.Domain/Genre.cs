@@ -1,19 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations;
-
 namespace TvShow.Domain;
 
-public class Genre
+public sealed class Genre
 {
-    [Required]
-    public int Id { get; set; }
-    
-    // Forcer l'unicité du nom
-    public string Name { get; set; } = string.Empty;
-    
-    public string Description { get; set; } = string.Empty;
-    
-    /// <summary>
-    /// Test PR
-    /// </summary>
-    public IReadOnlyCollection<TvShow> TvShow { get; set; } = new  List<TvShow>();
+    public Genre(int id, string name, string description)
+    {
+        Id = id;
+        Name = name;
+        Description = description;
+    }
+
+    public int Id { get; }
+    public string Name { get; }
+    public string Description { get; }
 }

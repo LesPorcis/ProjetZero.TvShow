@@ -1,13 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations;
-
 namespace TvShow.Domain;
 
-public class Writer
+public sealed class Writer
 {
-    [Required]
-    public int Id { get; set; }
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-    
-    public IReadOnlyCollection<TvShow> TvShow { get; set; } = new  List<TvShow>();
+    public Writer(int id, string firstName, string lastName)
+    {
+        Id = id;
+        FirstName = firstName;
+        LastName = lastName;
+    }
+
+    public int Id { get; }
+    public string FirstName { get; }
+    public string LastName { get; }
 }
