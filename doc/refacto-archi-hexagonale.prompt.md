@@ -75,9 +75,16 @@ ces ports.
    - Visibilité incohérente : `InMemoryTvShowRepository` est `public` alors que
      `ListTvShowsUseCase` est `internal sealed` (les adaptateurs devraient être `internal`,
      exposés uniquement via leur extension DI).
-   - **Garde-fou OpenAPI** : la configuration committée utilise Scalar
-     (`AddOpenApi()` + `MapOpenApi()` + `MapScalarApiReference()`). Toute bascule vers
-     `UseSwaggerUI(...)` casse le build (Swashbuckle non référencé). Conserver Scalar.
+   - **OpenAPI / docs** : la config committée expose Scalar en dev
+     (`AddOpenApi()` + `MapOpenApi()` + `MapScalarApiReference()`) mais ne produit aucun
+     artefact `openapi.json` versionnable. De plus, le document généré par défaut est
+     « sale » : route PascalCase `/api/TvShows` (token `[controller]`), content-types
+     parasites (`text/plain`, `text/json`) faute de `[Produces]`, et schéma exposant le
+     DTO applicatif `TvShowResponse` au lieu d'un contrat d'API dédié.
+     **Décision (cf. §3.4)** : on **abandonne Scalar** au profit d'une génération
+     **build-time** d'un `openapi.json` propre, et le controller renvoie des **ViewModels**.
+     (Garde-fou : ne **pas** basculer vers `UseSwaggerUI`/Swashbuckle, non référencé → casse
+     le build.)
 
 ---
 
@@ -119,13 +126,27 @@ ces ports.
 - **Harmoniser** les types de collection (`IReadOnlyList<…>` partout par défaut).
 - Retirer de cette couche tout ce qui est contrat HTTP (voir 3.4).
 
-### 3.4 `TvShow.Api` — adaptateur web avec ses propres contrats
-- Définir les **DTO d'API dédiés** dans `TvShow.Api` (ex. `Contracts/TvShowResponse`).
-  `TvShowResponse` quitte `TvShow.Application.Models`.
-- `TvShowsController` : appelle le use case, **mappe le DTO applicatif → contrat d'API**,
-  et **passe le `CancellationToken`** reçu.
-- `Program.cs` reste le **composition root** (câble `AddApplication()` +
-  `AddInfrastructure()`) et conserve la config **Scalar** existante.
+### 3.4 `TvShow.Api` — adaptateur web avec ses propres ViewModels
+- **ViewModels d'API dédiés** dans `TvShow.Api/ViewModels` (ex. `TvShowViewModel`) : c'est le
+  contrat HTTP de sortie, **distinct** du DTO applicatif. `TvShowResponse` quitte
+  `TvShow.Application.Models` (le contrat web ne vit plus dans `Application`).
+- **Mappers simples** dans `TvShow.Api/Mappers` : méthodes d'extension statiques, code de
+  mapping **explicite** (pas de bibliothèque type AutoMapper) DTO applicatif → ViewModel.
+- `TvShowsController` :
+  - **route explicite** `[Route("api/tvshows")]` (plus de token `[controller]`, donc fin du
+    `/api/TvShows` PascalCase) ;
+  - renvoie `IReadOnlyList<TvShowViewModel>`, **mappe** le DTO applicatif → ViewModel ;
+  - **propage le `CancellationToken`** reçu jusqu'au use case ;
+  - `[Produces("application/json")]` + `[ProducesResponseType<…>(200)]` pour un contrat HTTP
+    net (un seul content-type, type de réponse explicite).
+- **OpenAPI / `openapi.json` propre** :
+  - **Retirer Scalar** : package `Scalar.AspNetCore` + `MapOpenApi()` + `MapScalarApiReference()`.
+  - Conserver `AddOpenApi()` et générer un **`openapi.json` au build** via
+    `Microsoft.Extensions.ApiDescription.Server` (`OpenApiGenerateDocumentsOnBuild`), déposé
+    à la racine du projet et nommé `openapi.json`.
+  - Le document doit être **propre** : un seul content-type `application/json`, route
+    `/api/tvshows`, schéma `TvShowViewModel` lisible.
+- `Program.cs` reste le **composition root** (câble `AddApplication()` + `AddInfrastructure()`).
 
 > **Remarque dépendances** : l'`Api` référence `Infrastructure` uniquement en tant que
 > composition root (pour le `AddInfrastructure()`). C'est acceptable ; si tu veux durcir la
@@ -145,9 +166,11 @@ ces ports.
    Compiler.
 4. **Nettoyer Application** : port In renvoie un DTO applicatif, port Out renvoie le domaine,
    propager le token, harmoniser les collections. Compiler.
-5. **Déplacer les contrats d'API** dans `TvShow.Api`, mapper DTO applicatif → réponse HTTP,
-   propager le token dans le controller. Compiler.
-6. **Vérifier** la config OpenAPI/Scalar et l'endpoint.
+5. **Couche API** : créer les **ViewModels** (`TvShow.Api/ViewModels`) + **mappers simples**
+   (`TvShow.Api/Mappers`), route **explicite** `api/tvshows`, le controller mappe DTO
+   applicatif → ViewModel et **propage le token**. Compiler.
+6. **OpenAPI** : retirer Scalar, générer un **`openapi.json` propre au build** (un seul
+   content-type, route `/api/tvshows`) et vérifier l'endpoint.
 
 ---
 
@@ -161,8 +184,11 @@ ces ports.
       place ; les attributs `[Required]`/navigation EF n'existent **que** sur les DAO.
 - [ ] Les entités de domaine sont encapsulées (pas de setter public nu ; invariants validés).
 - [ ] Le `CancellationToken` est propagé de bout en bout (controller → use case → repository).
-- [ ] Le contrat HTTP (`TvShowResponse`) est défini dans `TvShow.Api` ; le port In renvoie un
-      DTO applicatif ; le port Out renvoie des entités de domaine.
+- [ ] Le **ViewModel** de sortie (`TvShowViewModel`) est défini dans `TvShow.Api/ViewModels`
+      et mappé depuis le DTO applicatif via un mapper simple (`TvShow.Api/Mappers`) ; le port
+      In renvoie un DTO applicatif ; le port Out renvoie des entités de domaine.
+- [ ] Un `openapi.json` **propre** est généré au build (un seul content-type
+      `application/json`, route `/api/tvshows`, schéma `TvShowViewModel`) ; Scalar est retiré.
 - [ ] Les adaptateurs (`InMemoryTvShowRepository`) sont `internal`, exposés via leur
       extension DI.
 - [ ] Direction des dépendances respectée : `Domain` ne dépend de rien ; `Application` ne
@@ -176,8 +202,11 @@ ces ports.
 
 - Cible **`net10.0`**, `Nullable` + `ImplicitUsings` activés ; ne pas changer les versions de
   packages sans nécessité.
-- Ne **pas** modifier le comportement public observable de l'API (même route, même schéma de
-  réponse).
-- Ignorer / ne pas embarquer la modification non committée de `TvShow.Api/Program.cs` qui
-  remplace Scalar par `UseSwaggerUI` (elle casse le build) : partir de l'état committé.
+- Préserver les **champs et valeurs** de la réponse (Breaking Bad, The Last of Us : mêmes
+  `Id`, `Name`, `ReleasedAt`, `Seasons`, `Episodes`). La route est **normalisée** vers la
+  forme explicite `/api/tvshows` (cf. §1/§5) ; le schéma de sortie passe de `TvShowResponse`
+  à `TvShowViewModel` (mêmes champs).
+- Ne **pas** introduire Swashbuckle / `UseSwaggerUI` (non référencé → casse le build). La
+  génération OpenAPI passe par `AddOpenApi()` + `Microsoft.Extensions.ApiDescription.Server`
+  (build-time), pas par une UI runtime.
 - Commits petits et ciblés, alignés sur les étapes du §4.
