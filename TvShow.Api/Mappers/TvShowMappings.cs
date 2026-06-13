@@ -1,21 +1,20 @@
 using TvShow.Api.ViewModels;
-using TvShow.Application.Models;
 
 namespace TvShow.Api.Mappers;
 
 /// <summary>
-/// Mapping simple et explicite DTO applicatif → ViewModel d'API.
+/// Mapping simple et explicite entité de domaine → ViewModel d'API.
 /// </summary>
 internal static class TvShowMappings
 {
-    public static TvShowViewModel ToViewModel(this TvShowResponse response) =>
+    public static TvShowViewModel ToViewModel(this TvShow.Domain.TvShow tvShow) =>
         new(
-            response.Id,
-            response.Name,
-            response.ReleasedAt,
-            response.Seasons,
-            response.Episodes);
+            tvShow.Id,
+            tvShow.Name,
+            tvShow.ReleasedAt,
+            tvShow.Seasons,
+            tvShow.Episodes);
 
-    public static IReadOnlyList<TvShowViewModel> ToViewModels(this IEnumerable<TvShowResponse> responses) =>
-        responses.Select(ToViewModel).ToList();
+    public static IReadOnlyCollection<TvShowViewModel> ToViewModels(this IEnumerable<TvShow.Domain.TvShow> tvShows) =>
+        tvShows.Select(ToViewModel).ToList();
 }

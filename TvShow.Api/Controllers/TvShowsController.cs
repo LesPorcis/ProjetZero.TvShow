@@ -11,8 +11,8 @@ namespace TvShow.Api.Controllers;
 public sealed class TvShowsController(IListTvShowsUseCase listTvShowsUseCase) : ControllerBase
 {
     [HttpGet]
-    [ProducesResponseType<IReadOnlyList<TvShowViewModel>>(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyList<TvShowViewModel>>> GetAll(CancellationToken cancellationToken)
+    [ProducesResponseType<IReadOnlyCollection<TvShowViewModel>>(StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyCollection<TvShowViewModel>>> GetAll(CancellationToken cancellationToken)
     {
         var tvShows = await listTvShowsUseCase.ExecuteAsync(cancellationToken);
 
