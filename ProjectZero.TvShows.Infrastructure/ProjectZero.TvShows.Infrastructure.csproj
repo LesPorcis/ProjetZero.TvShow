@@ -3,10 +3,13 @@
   <ItemGroup>
     <ProjectReference Include="..\ProjectZero.TvShows.Application\ProjectZero.TvShows.Application.csproj" />
     <ProjectReference Include="..\ProjectZero.TvShows.Domain\ProjectZero.TvShows.Domain.csproj" />
+    <ProjectReference Include="..\ProjectZero.Database\ProjectZero.Database.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <!-- EF Core / Npgsql sont fournis transitivement par ProjectZero.Database. -->
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.8" />
   </ItemGroup>
 
   <PropertyGroup>
