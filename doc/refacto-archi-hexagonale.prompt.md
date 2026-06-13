@@ -1,4 +1,4 @@
-# Prompt — Refacto : corriger l'architecture hexagonale (ProjetZero.TvShow)
+# Prompt — Refacto : corriger l'architecture hexagonale (ProjectZero.TvShows)
 
 > **Usage** : ce fichier est un prompt destiné à un agent (Claude Code) qui exécutera le
 > refacto. Il décrit le contexte, les problèmes constatés, l'état cible, les étapes et les
@@ -13,10 +13,10 @@ visent une **architecture hexagonale (ports & adaptateurs)** :
 
 | Projet | Rôle | Dépendances actuelles |
 |---|---|---|
-| `TvShow.Domain` | Cœur métier (entités) | aucune |
-| `TvShow.Application` | Ports (In/Out) + use cases + modèles | → Domain |
-| `TvShow.Infrastructure` | Adaptateurs pilotés (repositories) | → Application, Domain |
-| `TvShow.Api` | Adaptateur pilote (REST) + composition root | → Application, Infrastructure |
+| `ProjectZero.TvShows.Domain` | Cœur métier (entités) | aucune |
+| `ProjectZero.TvShows.Application` | Ports (In/Out) + use cases + modèles | → Domain |
+| `ProjectZero.TvShows.Infrastructure` | Adaptateurs pilotés (repositories) | → Application, Domain |
+| `ProjectZero.TvShows.Api` | Adaptateur pilote (REST) + composition root | → Application, Infrastructure |
 
 Fonctionnalité existante unique à préserver : `GET /api/tvshows` qui renvoie la liste des
 séries (`Id`, `Name`, `ReleasedAt`, `Seasons`, `Episodes`).
@@ -24,12 +24,12 @@ séries (`Id`, `Name`, `ReleasedAt`, `Seasons`, `Episodes`).
 **Direction des dépendances visée** (règle de l'hexagone) :
 
 ```
-        TvShow.Api  ──────────────┐ (composition root : câble les adaptateurs)
+        ProjectZero.TvShows.Api  ──────────────┐ (composition root : câble les adaptateurs)
           │                       │
           ▼                       ▼
-   TvShow.Application  ◄──── TvShow.Infrastructure
+   ProjectZero.TvShows.Application  ◄──── ProjectZero.TvShows.Infrastructure
           │                       │
-          └──────────► TvShow.Domain ◄──────────┘
+          └──────────► ProjectZero.TvShows.Domain ◄──────────┘
 ```
 
 Le `Domain` ne dépend de **rien**. `Application` ne connaît que des **ports** (interfaces),
@@ -49,11 +49,13 @@ ces ports.
      `Genre`) → préoccupation de persistance qui fuit dans le métier.
    - Modèle **anémique** : setters publics partout, aucune invariance protégée.
 
-2. **Conflit de nommage `TvShow.Domain.TvShow`** *(résolu)*.
-   Le type `TvShow` portait le même segment que le namespace, ce qui forçait l'alias
-   `using TvShowEntity = TvShow.Domain.TvShow;`. **Décision (cf. §3.1)** : le type de domaine
-   est **renommé `Series`** (namespaces `TvShow.*` conservés) → la collision et l'alias
-   disparaissent ; les autres couches référencent `Series` via `using TvShow.Domain;`.
+2. **Conflit de nommage** *(résolu)*.
+   Le type `TvShow` portait le même segment que son namespace (`TvShow.Domain.TvShow`), ce qui
+   forçait l'alias `using TvShowEntity = TvShow.Domain.TvShow;`. **Décision (cf. §3.1)** :
+   re-raciner tous les namespaces en **`ProjectZero.TvShows.*`** (pluriel) + renommer
+   projets/dossiers/assemblies/solution. Le segment `TvShows` (pluriel) ne collisionne plus
+   avec le type `TvShow` (singulier) → l'alias disparaît ; les autres couches référencent
+   `TvShow` via `using ProjectZero.TvShows.Domain;`.
 
 3. **Pas de modèle de persistance dédié.**
    `InMemoryTvShowRepository` manipule directement l'entité de domaine. Il manque une
@@ -66,7 +68,7 @@ ces ports.
    - `ListTvShowsUseCase.ExecuteAsync` ne transmet pas le token à `_repository.GetAllAsync()`.
 
 5. **Contrats de sortie mal placés.**
-   Le contrat HTTP `TvShowResponse` vit dans `TvShow.Application.Models` et est renvoyé tel
+   Le contrat HTTP `TvShowResponse` vit dans `ProjectZero.TvShows.Application.Models` et est renvoyé tel
    quel par le use case puis par le controller → l'API n'a pas de contrat propre, et le nom
    « Response » (préoccupation web) habite la couche Application.
 
@@ -91,7 +93,7 @@ ces ports.
 
 ## 3. État cible
 
-### 3.1 `TvShow.Domain` — entités pures et encapsulées
+### 3.1 `ProjectZero.TvShows.Domain` — entités pures et encapsulées
 - **Aucun** `using System.ComponentModel.DataAnnotations;` ni attribut framework.
 - **Supprimer** les propriétés de navigation bidirectionnelles façon EF. Ne conserver que
   les associations qui ont un sens *métier* (si une série « possède » réalisateurs,
@@ -102,16 +104,18 @@ ces ports.
   **pas de guards d'invariants** (modèle anémique immuable) — on garantit l'immuabilité, pas
   (encore) la validation métier. Les collections d'associations sont **copiées
   défensivement** à la construction (vraie immuabilité).
-- **Associations** : conserver `Series` → `Directors`/`Writers`/`Stars`/`Genres` (collections
+- **Associations** : conserver `TvShow` → `Directors`/`Writers`/`Stars`/`Genres` (collections
   immuables, défaut vide via paramètres optionnels du constructeur). **Supprimer** la
   navigation inverse bidirectionnelle façon EF sur `Director`/`Writer`/`Star`/`Genre`.
-- **Résoudre le conflit de nommage** : le type `TvShow` est **renommé `Series`** (namespaces
-  `TvShow.*` conservés). C'est ce qui supprime réellement la collision et l'alias
-  `TvShowEntity` ; les autres couches utilisent `using TvShow.Domain;` + `Series`.
-  (Note : passer à `ProjectZero.TvShow.*` n'aurait **pas** suffi — `TvShow` resterait un
-  segment de namespace, donc le nom simple `TvShow` continuerait de pointer vers le namespace.)
+- **Résoudre le conflit de nommage** : re-raciner les namespaces en **`ProjectZero.TvShows.*`**
+  (pluriel) — projets, dossiers, assemblies et solution renommés. Le type **reste `TvShow`**
+  (singulier) : le segment de namespace étant `TvShows` (pluriel), le nom simple `TvShow` ne
+  collisionne plus → l'alias `TvShowEntity` est supprimé ; les autres couches font
+  `using ProjectZero.TvShows.Domain;` + `TvShow`.
+  (Note : un singulier `ProjectZero.TvShow.*` n'aurait **pas** suffi — `TvShow` resterait un
+  segment de namespace ; c'est le **pluriel** `TvShows` qui lève la collision.)
 
-### 3.2 `TvShow.Infrastructure` — adaptateur de persistance + DAO + mapping
+### 3.2 `ProjectZero.TvShows.Infrastructure` — adaptateur de persistance + DAO + mapping
 - Introduire **`TvShowDao`** (et les DAO liés si nécessaire : `DirectorDao`, `WriterDao`,
   `StarDao`, `GenreDao`) : c'est ici que vivent les attributs (`[Required]`, etc.) et la
   **navigation bidirectionnelle** propres à la persistance EF.
@@ -123,26 +127,26 @@ ces ports.
   - **renvoie des entités de domaine** via le port `ITvShowRepository`,
   - propage le `CancellationToken`.
 
-### 3.3 `TvShow.Application` — ports & use cases propres
+### 3.3 `ProjectZero.TvShows.Application` — ports & use cases propres
 - **Port Out** `ITvShowRepository` : renvoie des entités de **domaine**
-  (`IReadOnlyCollection<TvShow.Domain.TvShow>`), `CancellationToken` en paramètre, **sans
-  alias** (type qualifié `TvShow.Domain.TvShow`, plus de `using TvShowEntity = …`).
+  (`IReadOnlyCollection<TvShow>` via `using ProjectZero.TvShows.Domain;`), `CancellationToken`
+  en paramètre, **sans alias** (plus de `using TvShowEntity = …`).
 - **Port In** `IListTvShowsUseCase` : renvoie **directement des entités de domaine**
-  (`IReadOnlyCollection<TvShow.Domain.TvShow>`). Décision actée (PR #5, commentaire
+  (`IReadOnlyCollection<TvShow>`). Décision actée (PR #5, commentaire
   « Pourquoi renvoyer un objet transformé et pas un objet de `Domain` ? ») : **pas de DTO
   applicatif** intermédiaire ; la transformation en contrat de sortie a lieu côté API
   (ViewModel, §3.4).
 - `ListTvShowsUseCase` : **primary constructor**
   (`internal sealed class ListTvShowsUseCase(ITvShowRepository repository) : IListTvShowsUseCase`)
   et **propage le `CancellationToken`** jusqu'au repository (ici simple délégation).
-- **Supprimer** `TvShow.Application.Models.TvShowResponse` (contrat web inutile à ce niveau).
+- **Supprimer** `ProjectZero.TvShows.Application.Models.TvShowResponse` (contrat web inutile à ce niveau).
 - **Harmoniser** les types de collection : `IReadOnlyCollection<…>` partout (In/Out).
 
-### 3.4 `TvShow.Api` — adaptateur web avec ses propres ViewModels
-- **ViewModels d'API dédiés** dans `TvShow.Api/ViewModels` (ex. `TvShowViewModel`) : c'est le
+### 3.4 `ProjectZero.TvShows.Api` — adaptateur web avec ses propres ViewModels
+- **ViewModels d'API dédiés** dans `ProjectZero.TvShows.Api/ViewModels` (ex. `TvShowViewModel`) : c'est le
   contrat HTTP de sortie, **distinct** de l'entité de domaine. `TvShowResponse` est **supprimé**
   (plus aucun contrat web dans `Application`).
-- **Mappers simples** dans `TvShow.Api/Mappers` : méthodes d'extension statiques, code de
+- **Mappers simples** dans `ProjectZero.TvShows.Api/Mappers` : méthodes d'extension statiques, code de
   mapping **explicite** (pas de bibliothèque type AutoMapper) entité de domaine → ViewModel.
 - `TvShowsController` :
   - **route explicite** `[Route("api/tvshows")]` (plus de token `[controller]`, donc fin du
@@ -169,20 +173,21 @@ ces ports.
 
 ## 4. Étapes suggérées (incrémentales, build vert à chaque palier)
 
-1. **Résoudre la collision** : renommer le type `TvShow.Domain.TvShow` → `Series` et supprimer
-   l'alias `TvShowEntity` (les couches référencent `Series` via `using TvShow.Domain;`).
+1. **Résoudre la collision** : re-raciner les namespaces en `ProjectZero.TvShows.*` (pluriel) —
+   projets/dossiers/assemblies/solution renommés — et supprimer l'alias `TvShowEntity`. Le type
+   **reste `TvShow`** ; les couches le référencent via `using ProjectZero.TvShows.Domain;`.
    Compiler.
 2. **Purifier le domaine** : retirer DataAnnotations + navigation inverse EF, rendre les
    entités **immuables anémiques** (sealed class, `get` only, constructeur d'affectation),
-   conserver les associations `Series → …` immuables. Compiler.
+   conserver les associations `TvShow → …` immuables. Compiler.
 3. **Créer `TvShowDao` + mapping** dans `Infrastructure` ; déplacer attributs/navigation EF
    vers les DAO. Adapter `InMemoryTvShowRepository` (DAO → domaine, `internal`, token).
    Compiler.
-4. **Nettoyer Application** : ports In **et** Out renvoient des **objets de domaine** (type
-   qualifié, sans alias), use case en primary constructor, propager le token, harmoniser les
+4. **Nettoyer Application** : ports In **et** Out renvoient des **objets de domaine** (`TvShow`
+   via `using`, sans alias), use case en primary constructor, propager le token, harmoniser les
    collections sur `IReadOnlyCollection`, supprimer `TvShowResponse`. Compiler.
-5. **Couche API** : créer les **ViewModels** (`TvShow.Api/ViewModels`) + **mappers simples**
-   (`TvShow.Api/Mappers`), route **explicite** `api/tvshows`, le controller mappe l'entité
+5. **Couche API** : créer les **ViewModels** (`ProjectZero.TvShows.Api/ViewModels`) + **mappers simples**
+   (`ProjectZero.TvShows.Api/Mappers`), route **explicite** `api/tvshows`, le controller mappe l'entité
    de domaine → ViewModel et **propage le token**. Compiler.
 6. **OpenAPI** : retirer Scalar, générer un **`openapi.json` propre au build** (un seul
    content-type, route `/api/tvshows`) et vérifier l'endpoint.
@@ -192,17 +197,18 @@ ces ports.
 ## 5. Critères d'acceptation
 
 - [ ] `dotnet build` réussit (0 erreur, 0 warning nouveau).
-- [ ] `TvShow.Domain` ne référence **aucun** package/attribut framework
-      (`grep` de `DataAnnotations` ⇒ 0 résultat dans `TvShow.Domain`).
+- [ ] `ProjectZero.TvShows.Domain` ne référence **aucun** package/attribut framework
+      (`grep` de `DataAnnotations` ⇒ 0 résultat dans `ProjectZero.TvShows.Domain`).
 - [ ] Plus aucun alias `using TvShowEntity = …` dans le code.
-- [ ] `TvShowDao` existe dans `TvShow.Infrastructure` et un mapping DAO → domaine est en
+- [ ] `TvShowDao` existe dans `ProjectZero.TvShows.Infrastructure` et un mapping DAO → domaine est en
       place ; les attributs `[Required]`/navigation EF n'existent **que** sur les DAO.
-- [ ] Le type de domaine est renommé `Series` ; les entités sont **immuables** (`get` only,
-      constructeur d'affectation, aucun setter public) — modèle **anémique** (sans guards) par
-      choix ; associations `Series → …` conservées immuables, navigation inverse EF supprimée.
+- [ ] Namespaces re-racinés en `ProjectZero.TvShows.*` (pluriel) ; le type de domaine **reste
+      `TvShow`** (la collision est levée par le pluriel) ; les entités sont **immuables**
+      (`get` only, constructeur d'affectation, aucun setter public) — modèle **anémique** (sans
+      guards) par choix ; associations `TvShow → …` conservées immuables, nav inverse EF supprimée.
 - [ ] Le `CancellationToken` est propagé de bout en bout (controller → use case → repository).
-- [ ] Le **ViewModel** de sortie (`TvShowViewModel`) est défini dans `TvShow.Api/ViewModels`
-      et mappé depuis l'**entité de domaine** via un mapper simple (`TvShow.Api/Mappers`) ;
+- [ ] Le **ViewModel** de sortie (`TvShowViewModel`) est défini dans `ProjectZero.TvShows.Api/ViewModels`
+      et mappé depuis l'**entité de domaine** via un mapper simple (`ProjectZero.TvShows.Api/Mappers`) ;
       les ports In **et** Out renvoient des entités de domaine (pas de DTO applicatif,
       `TvShowResponse` supprimé) ; collections en `IReadOnlyCollection`.
 - [ ] Un `openapi.json` **propre** est généré au build (un seul content-type
