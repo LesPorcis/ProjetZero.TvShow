@@ -49,10 +49,11 @@ ces ports.
      `Genre`) → préoccupation de persistance qui fuit dans le métier.
    - Modèle **anémique** : setters publics partout, aucune invariance protégée.
 
-2. **Conflit de nommage `TvShow.Domain.TvShow`.**
-   Le type `TvShow` porte le même segment que la racine du namespace, ce qui force l'alias
-   `using TvShowEntity = TvShow.Domain.TvShow;` dans `ITvShowRepository` et
-   `InMemoryTvShowRepository`. Symptôme d'un découpage de namespaces à revoir.
+2. **Conflit de nommage `TvShow.Domain.TvShow`** *(résolu)*.
+   Le type `TvShow` portait le même segment que le namespace, ce qui forçait l'alias
+   `using TvShowEntity = TvShow.Domain.TvShow;`. **Décision (cf. §3.1)** : le type de domaine
+   est **renommé `Series`** (namespaces `TvShow.*` conservés) → la collision et l'alias
+   disparaissent ; les autres couches référencent `Series` via `using TvShow.Domain;`.
 
 3. **Pas de modèle de persistance dédié.**
    `InMemoryTvShowRepository` manipule directement l'entité de domaine. Il manque une
@@ -96,13 +97,19 @@ ces ports.
   les associations qui ont un sens *métier* (si une série « possède » réalisateurs,
   scénaristes, acteurs, genres, c'est une relation orientée série → personnes, jamais
   l'inverse).
-- **Encapsulation** : propriétés en lecture seule (`get` / `init` ou `private set`),
-  initialisation par **constructeur** ou **factory** qui valide les invariants
-  (ex. `Name` non vide, `Seasons`/`Episodes` ≥ 0). Plus de setters publics nus.
-- **Résoudre le conflit de nommage** pour faire disparaître l'alias `TvShowEntity`.
-  Approche recommandée : adopter une racine de namespace non ambiguë
-  (`ProjectZero.TvShow.Domain`, `…Application`, `…Infrastructure`, `…Api`) afin que le type
-  `TvShow` ne collisionne plus avec un segment de namespace. Mettre à jour tous les `using`.
+- **Encapsulation (immuable, anémique)** : propriétés en **lecture seule** (`get` only),
+  valeurs fixées par **constructeur** d'affectation. Plus de setter public. Choix acté :
+  **pas de guards d'invariants** (modèle anémique immuable) — on garantit l'immuabilité, pas
+  (encore) la validation métier. Les collections d'associations sont **copiées
+  défensivement** à la construction (vraie immuabilité).
+- **Associations** : conserver `Series` → `Directors`/`Writers`/`Stars`/`Genres` (collections
+  immuables, défaut vide via paramètres optionnels du constructeur). **Supprimer** la
+  navigation inverse bidirectionnelle façon EF sur `Director`/`Writer`/`Star`/`Genre`.
+- **Résoudre le conflit de nommage** : le type `TvShow` est **renommé `Series`** (namespaces
+  `TvShow.*` conservés). C'est ce qui supprime réellement la collision et l'alias
+  `TvShowEntity` ; les autres couches utilisent `using TvShow.Domain;` + `Series`.
+  (Note : passer à `ProjectZero.TvShow.*` n'aurait **pas** suffi — `TvShow` resterait un
+  segment de namespace, donc le nom simple `TvShow` continuerait de pointer vers le namespace.)
 
 ### 3.2 `TvShow.Infrastructure` — adaptateur de persistance + DAO + mapping
 - Introduire **`TvShowDao`** (et les DAO liés si nécessaire : `DirectorDao`, `WriterDao`,
@@ -162,10 +169,12 @@ ces ports.
 
 ## 4. Étapes suggérées (incrémentales, build vert à chaque palier)
 
-1. **Renommer les namespaces** vers une racine non ambiguë (`ProjectZero.TvShow.*`) et
-   supprimer les alias `TvShowEntity`. Compiler.
-2. **Purifier le domaine** : retirer DataAnnotations + navigation EF, encapsuler les entités
-   (constructeurs/factories + invariants). Compiler.
+1. **Résoudre la collision** : renommer le type `TvShow.Domain.TvShow` → `Series` et supprimer
+   l'alias `TvShowEntity` (les couches référencent `Series` via `using TvShow.Domain;`).
+   Compiler.
+2. **Purifier le domaine** : retirer DataAnnotations + navigation inverse EF, rendre les
+   entités **immuables anémiques** (sealed class, `get` only, constructeur d'affectation),
+   conserver les associations `Series → …` immuables. Compiler.
 3. **Créer `TvShowDao` + mapping** dans `Infrastructure` ; déplacer attributs/navigation EF
    vers les DAO. Adapter `InMemoryTvShowRepository` (DAO → domaine, `internal`, token).
    Compiler.
@@ -188,7 +197,9 @@ ces ports.
 - [ ] Plus aucun alias `using TvShowEntity = …` dans le code.
 - [ ] `TvShowDao` existe dans `TvShow.Infrastructure` et un mapping DAO → domaine est en
       place ; les attributs `[Required]`/navigation EF n'existent **que** sur les DAO.
-- [ ] Les entités de domaine sont encapsulées (pas de setter public nu ; invariants validés).
+- [ ] Le type de domaine est renommé `Series` ; les entités sont **immuables** (`get` only,
+      constructeur d'affectation, aucun setter public) — modèle **anémique** (sans guards) par
+      choix ; associations `Series → …` conservées immuables, navigation inverse EF supprimée.
 - [ ] Le `CancellationToken` est propagé de bout en bout (controller → use case → repository).
 - [ ] Le **ViewModel** de sortie (`TvShowViewModel`) est défini dans `TvShow.Api/ViewModels`
       et mappé depuis l'**entité de domaine** via un mapper simple (`TvShow.Api/Mappers`) ;
