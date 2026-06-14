@@ -8,13 +8,13 @@ namespace ProjectZero.TvShows.Api.Controllers;
 [ApiController]
 [Route("api/tvshows")]
 [Produces("application/json")]
-public sealed class TvShowsController(IListTvShowsUseCase listTvShowsUseCase) : ControllerBase
+public sealed class TvShowsController(ITvShowsCatalog tvShowsCatalog) : ControllerBase
 {
     [HttpGet]
     [ProducesResponseType<IReadOnlyCollection<TvShowViewModel>>(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyCollection<TvShowViewModel>>> GetAll(CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyCollection<TvShowViewModel>>> ListAsync(CancellationToken cancellationToken)
     {
-        var tvShows = await listTvShowsUseCase.ExecuteAsync(cancellationToken);
+        var tvShows = await tvShowsCatalog.ListAsync(cancellationToken);
 
         return Ok(tvShows.ToViewModels());
     }
