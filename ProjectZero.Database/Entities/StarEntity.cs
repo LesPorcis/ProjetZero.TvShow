@@ -13,7 +13,7 @@ internal sealed class StarEntity : IEntityTypeConfiguration<StarEntity>
 
     public void Configure(EntityTypeBuilder<StarEntity> builder)
     {
-        builder.ToTable("Star");
+        builder.ToTable("Stars");
 
         builder.HasKey(star => new { star.PersonId, star.TvShowId });
 

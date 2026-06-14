@@ -13,7 +13,7 @@ internal sealed class DirectorEntity : IEntityTypeConfiguration<DirectorEntity>
 
     public void Configure(EntityTypeBuilder<DirectorEntity> builder)
     {
-        builder.ToTable("Director");
+        builder.ToTable("Directors");
 
         builder.HasKey(director => new { director.PersonId, director.TvShowId });
 

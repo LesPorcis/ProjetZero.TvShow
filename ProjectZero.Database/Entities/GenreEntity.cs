@@ -13,7 +13,7 @@ internal sealed class GenreEntity : IEntityTypeConfiguration<GenreEntity>
 
     public void Configure(EntityTypeBuilder<GenreEntity> builder)
     {
-        builder.ToTable("Genre");
+        builder.ToTable("Genres");
 
         builder.HasKey(genre => genre.Id);
 

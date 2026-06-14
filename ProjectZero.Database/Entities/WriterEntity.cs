@@ -13,7 +13,7 @@ internal sealed class WriterEntity : IEntityTypeConfiguration<WriterEntity>
 
     public void Configure(EntityTypeBuilder<WriterEntity> builder)
     {
-        builder.ToTable("Writer");
+        builder.ToTable("Writers");
 
         builder.HasKey(writer => new { writer.PersonId, writer.TvShowId });
 

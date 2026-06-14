@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProjectZero.TvShows.Api.Mappers;
 using ProjectZero.TvShows.Api.ViewModels;

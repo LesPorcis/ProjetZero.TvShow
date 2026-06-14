@@ -6,16 +6,16 @@ namespace ProjectZero.Database.Entities;
 internal sealed class PersonEntity : IEntityTypeConfiguration<PersonEntity>
 {
     public int Id { get; init; }
-    public string FirstName { get; init; } = string.Empty;
-    public string LastName { get; init; } = string.Empty;
+    public required string FirstName { get; init; }
+    public required string LastName { get; init; }
 
-    public ICollection<DirectorEntity> DirectorRoles { get; init; } = new List<DirectorEntity>();
-    public ICollection<WriterEntity> WriterRoles { get; init; } = new List<WriterEntity>();
-    public ICollection<StarEntity> StarRoles { get; init; } = new List<StarEntity>();
+    public List<DirectorEntity> DirectorRoles { get; init; } = [];
+    public List<WriterEntity> WriterRoles { get; init; } = [];
+    public List<StarEntity> StarRoles { get; init; } = [];
 
     public void Configure(EntityTypeBuilder<PersonEntity> builder)
     {
-        builder.ToTable("Person");
+        builder.ToTable("Persons");
 
         builder.HasKey(person => person.Id);
 

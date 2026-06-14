@@ -18,6 +18,6 @@ internal static class TvShowMapper
         entity.Genres.ToDomains()
     );
 
-    public static IReadOnlyCollection<TvShow> ToDomains(this IEnumerable<TvShowEntity> entities) =>
+    public static IReadOnlyCollection<TvShow> ToDomains(this IReadOnlyCollection<TvShowEntity> entities) =>
         entities.Select(entity => entity.ToDomain()).ToList();
 }

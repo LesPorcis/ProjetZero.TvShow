@@ -7,4 +7,9 @@ public sealed class TvShowViewModel
     public DateOnly? ReleasedAt { get; init; }
     public required int Seasons { get; init; }
     public required int Episodes { get; init; }
+
+    public required IReadOnlyCollection<DirectorViewModel> Directors { get; init; }
+    public required IReadOnlyCollection<WriterViewModel> Writers { get; init; }
+    public required IReadOnlyCollection<StarViewModel> Stars { get; init; }
+    public required IReadOnlyCollection<GenreViewModel> Genres { get; init; }
 }

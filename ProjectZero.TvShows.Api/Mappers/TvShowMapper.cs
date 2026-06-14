@@ -11,7 +11,11 @@ internal static class TvShowMapper
         Name = series.Name,
         ReleasedAt = series.ReleasedAt,
         Seasons = series.Seasons,
-        Episodes = series.Episodes
+        Episodes = series.Episodes,
+        Directors = series.Directors.ToViewModels(),
+        Writers = series.Writers.ToViewModels(),
+        Stars = series.Stars.ToViewModels(),
+        Genres = series.Genres.ToViewModels()
     };
 
     public static IReadOnlyCollection<TvShowViewModel> ToViewModels(this IReadOnlyCollection<TvShow> series) =>
