@@ -30,6 +30,26 @@ dotnet ef database update      --project ProjectZero.Database --startup-project 
 
 **PostgreSQL est le seul provider** (plus de mode `InMemory` ni de clé `Persistence:Provider`). Le câblage se fait au composition root : `ProjectZero.Web` appelle `AddDatabase(builder.Configuration)` → `AddEfPostgreSql(...)` (`ProjectZero.Database`), qui enregistre `TvShowDbContext` via `UseNpgsql(...)` en lisant `ConnectionStrings:TvShowDb`. Le repository `TvShowsRepository` est enregistré par `AddInfrastructure()`.
 
+### Docker (PostgreSQL + Adminer)
+
+Un `docker-compose.yml` (racine) fournit une base de dev jetable :
+
+```bash
+docker compose up -d          # démarre Postgres + Adminer
+docker compose down           # arrête (les données persistent dans le volume tvshow-db-data)
+docker compose down -v        # arrête et supprime le volume (base remise à zéro)
+```
+
+- **Postgres 17** exposé sur le port hôte **5433** → 5432 conteneur (le 5432 reste libre pour le Postgres local). Volume nommé `tvshow-db-data` + `healthcheck` `pg_isready`.
+- **Adminer** sur http://localhost:8080 (serveur pré-rempli `db`, identifiants `postgres` / `postgres`).
+- L'API se connecte à cette base via `appsettings.Docker.json` (`Host=localhost;Port=5433`), activé par le profil de lancement **`docker-db`** (`ASPNETCORE_ENVIRONMENT=Docker`).
+- **Migrations non automatiques** (convention du dépôt) : après `up`, appliquer explicitement en pointant le port 5433 :
+
+```bash
+ConnectionStrings__TvShowDb="Host=localhost;Port=5433;Database=tvshow;Username=postgres;Password=postgres" \
+  dotnet ef database update --project ProjectZero.Database --startup-project ProjectZero.Database
+```
+
 ## Architecture
 
 Architecture **hexagonale** (ports & adapters). Le domaine est au centre ; les dépendances pointent vers l'intérieur. Flux d'une requête :
