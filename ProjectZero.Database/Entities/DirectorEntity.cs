@@ -1,17 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace ProjectZero.Database.Daos;
+namespace ProjectZero.Database.Entities;
 
-internal sealed class DirectorDao : IEntityTypeConfiguration<DirectorDao>
+internal sealed class DirectorEntity : IEntityTypeConfiguration<DirectorEntity>
 {
     public int PersonId { get; init; }
     public int TvShowId { get; init; }
 
-    public PersonDao Person { get; init; } = null!;
-    public TvShowDao TvShow { get; init; } = null!;
+    public PersonEntity Person { get; init; } = null!;
+    public TvShowEntity TvShow { get; init; } = null!;
 
-    public void Configure(EntityTypeBuilder<DirectorDao> builder)
+    public void Configure(EntityTypeBuilder<DirectorEntity> builder)
     {
         builder.ToTable("Director");
 

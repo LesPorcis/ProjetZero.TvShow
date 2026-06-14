@@ -1,12 +1,13 @@
-using ProjectZero.Database.Daos;
+using ProjectZero.Database.Entities;
 using ProjectZero.TvShows.Domain;
 
 namespace ProjectZero.TvShows.Infrastructure.Mapping;
 
 internal static class WriterMapper
 {
-    public static Writer ToDomain(this WriterDao dao) => new(dao.Person.Id, dao.Person.FirstName, dao.Person.LastName);
+    public static Writer ToDomain(this WriterEntity entity) => 
+        new(entity.Person.Id, entity.Person.FirstName, entity.Person.LastName);
 
-    public static IReadOnlyCollection<Writer> ToDomains(this IEnumerable<WriterDao> daos) =>
-        daos.Select(dao => dao.ToDomain()).ToList();
+    public static IReadOnlyCollection<Writer> ToDomains(this IEnumerable<WriterEntity> entities) =>
+        entities.Select(entity => entity.ToDomain()).ToList();
 }

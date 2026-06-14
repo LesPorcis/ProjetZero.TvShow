@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace ProjectZero.Database.Daos;
+namespace ProjectZero.Database.Entities;
 
-internal sealed class TvShowDao : IEntityTypeConfiguration<TvShowDao>
+internal sealed class TvShowEntity : IEntityTypeConfiguration<TvShowEntity>
 {
     public int Id { get; init; }
     public string Name { get; init; } = string.Empty;
@@ -11,12 +11,12 @@ internal sealed class TvShowDao : IEntityTypeConfiguration<TvShowDao>
     public int Seasons { get; init; }
     public int Episodes { get; init; }
 
-    public ICollection<DirectorDao> Directors { get; init; } = new List<DirectorDao>();
-    public ICollection<WriterDao> Writers { get; init; } = new List<WriterDao>();
-    public ICollection<StarDao> Stars { get; init; } = new List<StarDao>();
-    public ICollection<GenreDao> Genres { get; init; } = new List<GenreDao>();
+    public ICollection<DirectorEntity> Directors { get; init; } = new List<DirectorEntity>();
+    public ICollection<WriterEntity> Writers { get; init; } = new List<WriterEntity>();
+    public ICollection<StarEntity> Stars { get; init; } = new List<StarEntity>();
+    public ICollection<GenreEntity> Genres { get; init; } = new List<GenreEntity>();
 
-    public void Configure(EntityTypeBuilder<TvShowDao> builder)
+    public void Configure(EntityTypeBuilder<TvShowEntity> builder)
     {
         builder.ToTable("TvShow");
 
@@ -30,7 +30,7 @@ internal sealed class TvShowDao : IEntityTypeConfiguration<TvShowDao>
             .UsingEntity(join => join.ToTable("TvShowGenres"));
 
         builder.HasData(
-            new TvShowDao
+            new TvShowEntity
             {
                 Id = 1,
                 Name = "Breaking Bad",
@@ -38,7 +38,7 @@ internal sealed class TvShowDao : IEntityTypeConfiguration<TvShowDao>
                 Seasons = 5,
                 Episodes = 62
             },
-            new TvShowDao
+            new TvShowEntity
             {
                 Id = 2,
                 Name = "The Last of Us",

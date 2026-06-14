@@ -59,7 +59,7 @@ ces ports.
 
 3. **Pas de modèle de persistance dédié.**
    `InMemoryTvShowRepository` manipule directement l'entité de domaine. Il manque une
-   **entité d'infrastructure** (`TvShowDao`, l'entité EF/persistance qui portera, elle, les
+   **entité d'infrastructure** (`TvShowEntity`, l'entité EF/persistance qui portera, elle, les
    attributs et la navigation) **mappée vers l'entité de domaine**.
 
 4. **`CancellationToken` déclaré mais jamais propagé.**
@@ -115,15 +115,15 @@ ces ports.
   (Note : un singulier `ProjectZero.TvShow.*` n'aurait **pas** suffi — `TvShow` resterait un
   segment de namespace ; c'est le **pluriel** `TvShows` qui lève la collision.)
 
-### 3.2 `ProjectZero.TvShows.Infrastructure` — adaptateur de persistance + DAO + mapping
-- Introduire **`TvShowDao`** (et les DAO liés si nécessaire : `DirectorDao`, `WriterDao`,
-  `StarDao`, `GenreDao`) : c'est ici que vivent les attributs (`[Required]`, etc.) et la
+### 3.2 `ProjectZero.TvShows.Infrastructure` — adaptateur de persistance + entités de persistance + mapping
+- Introduire **`TvShowEntity`** (et les entités liées si nécessaire : `DirectorEntity`, `WriterEntity`,
+  `StarEntity`, `GenreEntity`) : c'est ici que vivent les attributs (`[Required]`, etc.) et la
   **navigation bidirectionnelle** propres à la persistance EF.
-- Fournir un **mapper** `TvShowDao` → entité de domaine `TvShow` (méthode d'extension ou
+- Fournir un **mapper** `TvShowEntity` → entité de domaine `TvShow` (méthode d'extension ou
   classe de mapping dédiée).
 - `InMemoryTvShowRepository` :
   - devient **`internal sealed`** (exposé uniquement via `AddInfrastructure`),
-  - stocke des `TvShowDao` puis **mappe** vers le domaine,
+  - stocke des `TvShowEntity` puis **mappe** vers le domaine,
   - **renvoie des entités de domaine** via le port `ITvShowRepository`,
   - propage le `CancellationToken`.
 
@@ -180,8 +180,8 @@ ces ports.
 2. **Purifier le domaine** : retirer DataAnnotations + navigation inverse EF, rendre les
    entités **immuables anémiques** (sealed class, `get` only, constructeur d'affectation),
    conserver les associations `TvShow → …` immuables. Compiler.
-3. **Créer `TvShowDao` + mapping** dans `Infrastructure` ; déplacer attributs/navigation EF
-   vers les DAO. Adapter `InMemoryTvShowRepository` (DAO → domaine, `internal`, token).
+3. **Créer `TvShowEntity` + mapping** dans `Infrastructure` ; déplacer attributs/navigation EF
+   vers les entités de persistance. Adapter `InMemoryTvShowRepository` (entité → domaine, `internal`, token).
    Compiler.
 4. **Nettoyer Application** : ports In **et** Out renvoient des **objets de domaine** (`TvShow`
    via `using`, sans alias), use case en primary constructor, propager le token, harmoniser les
@@ -200,8 +200,8 @@ ces ports.
 - [ ] `ProjectZero.TvShows.Domain` ne référence **aucun** package/attribut framework
       (`grep` de `DataAnnotations` ⇒ 0 résultat dans `ProjectZero.TvShows.Domain`).
 - [ ] Plus aucun alias `using TvShowEntity = …` dans le code.
-- [ ] `TvShowDao` existe dans `ProjectZero.TvShows.Infrastructure` et un mapping DAO → domaine est en
-      place ; les attributs `[Required]`/navigation EF n'existent **que** sur les DAO.
+- [ ] `TvShowEntity` existe dans `ProjectZero.TvShows.Infrastructure` et un mapping entité → domaine est en
+      place ; les attributs `[Required]`/navigation EF n'existent **que** sur les entités de persistance.
 - [ ] Namespaces re-racinés en `ProjectZero.TvShows.*` (pluriel) ; le type de domaine **reste
       `TvShow`** (la collision est levée par le pluriel) ; les entités sont **immuables**
       (`get` only, constructeur d'affectation, aucun setter public) — modèle **anémique** (sans

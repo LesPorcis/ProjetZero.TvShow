@@ -1,17 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace ProjectZero.Database.Daos;
+namespace ProjectZero.Database.Entities;
 
-internal sealed class WriterDao : IEntityTypeConfiguration<WriterDao>
+internal sealed class WriterEntity : IEntityTypeConfiguration<WriterEntity>
 {
     public int PersonId { get; init; }
     public int TvShowId { get; init; }
 
-    public PersonDao Person { get; init; } = null!;
-    public TvShowDao TvShow { get; init; } = null!;
+    public PersonEntity Person { get; init; } = null!;
+    public TvShowEntity TvShow { get; init; } = null!;
 
-    public void Configure(EntityTypeBuilder<WriterDao> builder)
+    public void Configure(EntityTypeBuilder<WriterEntity> builder)
     {
         builder.ToTable("Writer");
 

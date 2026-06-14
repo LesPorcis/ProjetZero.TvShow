@@ -8,22 +8,22 @@
 
 ## Rôle du projet
 
-`ProjectZero.Database` est le **projet technique de persistance** : il contient les **DAO**
-(entités EF), le `DbContext`, la **fabrique design-time** et les **migrations**. C'est un
-projet **feuille** : il ne référence **aucun** autre projet de la solution (ni `Domain`, ni
-`Application`). Il porte les packages EF Core / Npgsql.
+`ProjectZero.Database` est le **projet technique de persistance** : il contient les **entités
+de persistance** (entités EF), le `DbContext`, la **fabrique design-time** et les **migrations**.
+C'est un projet **feuille** : il ne référence **aucun** autre projet de la solution (ni `Domain`,
+ni `Application`). Il porte les packages EF Core / Npgsql.
 
 ```
 ProjectZero.Database  →  (EF Core, Npgsql, EF Core Design)   [aucune référence projet]
         ▲
         │ référencé uniquement par
-ProjectZero.TvShows.Infrastructure  (qui mappe les DAO vers le domaine et implémente les ports)
+ProjectZero.TvShows.Infrastructure  (qui mappe les entités de persistance vers le domaine et implémente les ports)
 ```
 
 ## Règle d'encapsulation (non négociable)
 
-- **DAO et `DbContext` sont `internal`.** Ils ne doivent jamais être visibles de `Application`,
-  `Domain` ou `Api`.
+- **Entités de persistance et `DbContext` sont `internal`.** Ils ne doivent jamais être visibles
+  de `Application`, `Domain` ou `Api`.
 - L'accès est ouvert **au seul adaptateur d'infrastructure** via, dans le `.csproj` :
 
 ```xml
@@ -32,31 +32,31 @@ ProjectZero.TvShows.Infrastructure  (qui mappe les DAO vers le domaine et implé
 </ItemGroup>
 ```
 
-- Aucun `Dao` ne franchit la frontière du projet autrement que **mappé en entité de domaine**
-  (le mapping vit côté `ProjectZero.TvShows.Infrastructure`).
+- Aucune entité de persistance ne franchit la frontière du projet autrement que **mappée en
+  entité de domaine** (le mapping vit côté `ProjectZero.TvShows.Infrastructure`).
 
-## 1. DAO — entités de persistance
+## 1. Entités de persistance
 
-- **Suffixe `Dao` obligatoire** : `TvShowDao`, `DirectorDao`, `WriterDao`, `StarDao`,
-  `GenreDao`, … `internal sealed`, sous `Daos/`.
-- C'est le DAO — **pas le domaine** — qui porte les préoccupations EF : navigations, clés,
-  colonnes, contraintes.
-- **Chaque DAO porte sa propre configuration EF Core** : il **implémente
-  `IEntityTypeConfiguration<XxxDao>`** et la méthode `Configure(...)` vit **dans la classe**.
+- **Suffixe `Entity` obligatoire** : `TvShowEntity`, `DirectorEntity`, `WriterEntity`,
+  `StarEntity`, `GenreEntity`, … `internal sealed`, sous `Entities/`.
+- C'est l'entité de persistance — **pas le domaine** — qui porte les préoccupations EF :
+  navigations, clés, colonnes, contraintes.
+- **Chaque entité porte sa propre configuration EF Core** : elle **implémente
+  `IEntityTypeConfiguration<XxxEntity>`** et la méthode `Configure(...)` vit **dans la classe**.
   Pas de classe de configuration séparée, pas de Fluent API épars dans `OnModelCreating`.
 
 ```csharp
-namespace ProjectZero.Database.Daos;
+namespace ProjectZero.Database.Entities;
 
-internal sealed class TvShowDao : IEntityTypeConfiguration<TvShowDao>
+internal sealed class TvShowEntity : IEntityTypeConfiguration<TvShowEntity>
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     // …
 
-    // La config EF Core vit DANS la classe DAO.
+    // La config EF Core vit DANS la classe entité.
     // Nommage par défaut EF Core (PascalCase) : pas de ToTable()/mapping de colonnes forcé.
-    public void Configure(EntityTypeBuilder<TvShowDao> builder)
+    public void Configure(EntityTypeBuilder<TvShowEntity> builder)
     {
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Name).HasMaxLength(256).IsRequired();
@@ -64,14 +64,14 @@ internal sealed class TvShowDao : IEntityTypeConfiguration<TvShowDao>
 }
 ```
 
-### Relations entre DAO
+### Relations entre entités
 
-- Les relations (one-to-many, many-to-many) se configurent dans le `Configure` du DAO
-  **propriétaire** (p. ex. `TvShowDao` configure ses liens vers
-  `DirectorDao`/`WriterDao`/`StarDao`/`GenreDao`). Les DAO « possédés » ne déclarent que leur
-  clé/colonnes + la skip navigation inverse.
+- Les relations (one-to-many, many-to-many) se configurent dans le `Configure` de l'entité
+  **propriétaire** (p. ex. `TvShowEntity` configure ses liens vers
+  `DirectorEntity`/`WriterEntity`/`StarEntity`/`GenreEntity`). Les entités « possédées » ne
+  déclarent que leur clé/colonnes + la skip navigation inverse.
 - Pour le many-to-many, **nommer explicitement la table de jointure** afin de ne pas exposer
-  le suffixe interne `Dao` dans le schéma SQL :
+  le suffixe interne `Entity` dans le schéma SQL :
 
 ```csharp
 builder.HasMany(tvShow => tvShow.Genres).WithMany(genre => genre.TvShows)
@@ -80,11 +80,11 @@ builder.HasMany(tvShow => tvShow.Genres).WithMany(genre => genre.TvShows)
 
 ## 2. `DbContext`
 
-- `internal sealed`, à la racine du projet, expose les `DbSet<XxxDao>` et un **constructeur
+- `internal sealed`, à la racine du projet, expose les `DbSet<XxxEntity>` et un **constructeur
   public** `TvShowDbContext(DbContextOptions<TvShowDbContext>)` (requis par EF Core même si la
   classe est `internal`).
 - `OnModelCreating` **n'écrit pas** de configuration à la main : il **charge toutes les configs
-  portées par les DAO** via `ApplyConfigurationsFromAssembly`.
+  portées par les entités** via `ApplyConfigurationsFromAssembly`.
 
 ```csharp
 protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -110,7 +110,7 @@ dotnet ef database update \
 ```
 
 - **Pas de migration automatique au démarrage** : application explicite via la CLI.
-- Le seed des données de référence se fait via `HasData(...)` dans la config du DAO concerné.
+- Le seed des données de référence se fait via `HasData(...)` dans la config de l'entité concernée.
 - **Versionner les migrations dans un commit dédié** : les fichiers générés sous `Migrations/`
   (`<timestamp>_<Name>.cs`, `.Designer.cs` et `TvShowDbContextModelSnapshot.cs`) sont committés
   **seuls**, isolés des changements de code applicatif. Un diff de migration séparé est plus
@@ -123,9 +123,9 @@ dotnet ef database update \
 
 ## Checklist d'ajout d'une entité persistée
 
-- [ ] DAO suffixé `Dao`, `internal sealed`, sous `Daos/`.
-- [ ] DAO implémente `IEntityTypeConfiguration<XxxDao>` (config **dans la classe**).
-- [ ] `DbSet<XxxDao>` ajouté au `DbContext`.
+- [ ] Entité suffixée `Entity`, `internal sealed`, sous `Entities/`.
+- [ ] Entité implémente `IEntityTypeConfiguration<XxxEntity>` (config **dans la classe**).
+- [ ] `DbSet<XxxEntity>` ajouté au `DbContext`.
 - [ ] Relations configurées côté propriétaire ; tables de jointure nommées.
 - [ ] Migration générée (`dotnet ef migrations add …` sur `ProjectZero.Database`).
-- [ ] Le mapping `Dao → domaine` est ajouté côté `ProjectZero.TvShows.Infrastructure`.
+- [ ] Le mapping `entité → domaine` est ajouté côté `ProjectZero.TvShows.Infrastructure`.

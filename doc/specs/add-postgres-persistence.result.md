@@ -13,18 +13,18 @@
 
 Projet **feuille** (aucune référence projet), ajouté à la solution :
 
-- `Daos/` : `TvShowDao`, `DirectorDao`, `WriterDao`, `StarDao`, `GenreDao` — `internal`, suffixe
-  `Dao`, **configuration EF Core dans la classe** (`IEntityTypeConfiguration<XxxDao>`).
+- `Entities/` : `TvShowEntity`, `DirectorEntity`, `WriterEntity`, `StarEntity`, `GenreEntity` — `internal`, suffixe
+  `Entity`, **configuration EF Core dans la classe** (`IEntityTypeConfiguration<XxxEntity>`).
 - `TvShowDbContext.cs` (`internal`, constructeur public) + `TvShowDbContextFactory.cs`
   (design-time, pour `dotnet ef`).
 - `Migrations/` : migration `InitialCreate` (namespace `ProjectZero.Database.Migrations`).
 - Packages **EF Core 10.0.4 + Npgsql.EntityFrameworkCore.PostgreSQL 10.0.2 + EF Core Design**.
-- `<InternalsVisibleTo Include="TvShow.Infrastructure" />` ⇒ DAO et `DbContext` restent
+- `<InternalsVisibleTo Include="TvShow.Infrastructure" />` ⇒ entités de persistance et `DbContext` restent
   `internal`, visibles uniquement de l'infrastructure.
 
 ## `TvShow.Infrastructure` (adaptateurs uniquement)
 
-- `Mapping/TvShowDaoMapper.cs` : mapping DAO → domaine (sans back-référence → pas de cycle).
+- `Mapping/TvShowMapper.cs` : mapping entité → domaine (sans back-référence → pas de cycle).
 - `Repositories/` : `TvShowRepository` (EF, `Include` des relations) + `InMemoryTvShowRepository`,
   tous deux `internal sealed`, sur le port secondaire `ITvShowRepository`.
 - `DependencyInjection.cs` : `AddInfrastructure(IServiceCollection, IConfiguration)` — sélecteur
@@ -46,7 +46,7 @@ TvShow.Domain         → (rien)
 
 9 tables : `TvShows`, `Directors`, `Writers`, `Stars`, `Genres` + tables de jointure
 many-to-many **nommées explicitement** `TvShowDirectors`, `TvShowWriters`, `TvShowStars`,
-`TvShowGenres` (pour ne pas exposer le suffixe `Dao` dans le SQL). Seed des deux séries
+`TvShowGenres` (pour ne pas exposer le suffixe `Entity` dans le SQL). Seed des deux séries
 existantes (*Breaking Bad*, *The Last of Us*) via `HasData`.
 
 ## Décisions clés

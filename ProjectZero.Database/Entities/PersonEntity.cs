@@ -1,19 +1,19 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace ProjectZero.Database.Daos;
+namespace ProjectZero.Database.Entities;
 
-internal sealed class PersonDao : IEntityTypeConfiguration<PersonDao>
+internal sealed class PersonEntity : IEntityTypeConfiguration<PersonEntity>
 {
     public int Id { get; init; }
     public string FirstName { get; init; } = string.Empty;
     public string LastName { get; init; } = string.Empty;
 
-    public ICollection<DirectorDao> DirectorRoles { get; init; } = new List<DirectorDao>();
-    public ICollection<WriterDao> WriterRoles { get; init; } = new List<WriterDao>();
-    public ICollection<StarDao> StarRoles { get; init; } = new List<StarDao>();
+    public ICollection<DirectorEntity> DirectorRoles { get; init; } = new List<DirectorEntity>();
+    public ICollection<WriterEntity> WriterRoles { get; init; } = new List<WriterEntity>();
+    public ICollection<StarEntity> StarRoles { get; init; } = new List<StarEntity>();
 
-    public void Configure(EntityTypeBuilder<PersonDao> builder)
+    public void Configure(EntityTypeBuilder<PersonEntity> builder)
     {
         builder.ToTable("Person");
 

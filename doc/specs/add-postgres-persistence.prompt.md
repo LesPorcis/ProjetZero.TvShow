@@ -5,7 +5,7 @@
 > étapes et les critères d'acceptation. Suis-le pas à pas, en gardant le build vert après
 > chaque étape. Les conventions détaillées sont dans
 > [`doc/instructions/database-instructions.md`](../instructions/database-instructions.md)
-> (projet base de données : DAO, `DbContext`, migrations) et
+> (projet base de données : entités de persistance, `DbContext`, migrations) et
 > [`doc/instructions/infrastructure-instructions.md`](../instructions/infrastructure-instructions.md)
 > (adaptateurs : repositories, mapping, DI) — ces fichiers priment en cas de doute.
 
@@ -20,7 +20,7 @@ hexagonale (ports & adaptateurs)**, déjà refactorée sur `refactor/fix-hexago`
 |---|---|---|
 | `TvShow.Domain` | Cœur métier (entités) | aucune |
 | `TvShow.Application` | Ports In/Out + use cases + modèles | → Domain |
-| `ProjectZero.Database` | Projet base de données : DAO, `DbContext`, migrations (EF Core/Npgsql) | aucune (projet feuille) |
+| `ProjectZero.Database` | Projet base de données : entités de persistance, `DbContext`, migrations (EF Core/Npgsql) | aucune (projet feuille) |
 | `TvShow.Infrastructure` | Adaptateurs pilotés (repositories, mapping, DI) | → Application, Domain, Database |
 | `TvShow.Api` | Adaptateur pilote (REST) + composition root | → Application, Infrastructure |
 
@@ -36,13 +36,13 @@ derrière le même port secondaire, sans casser l'hexagone ni le contrat HTTP ex
 
 ## 2. Décisions arrêtées (cadre de cette PR)
 
-0. **Projet base de données dédié `ProjectZero.Database`** : il contient les DAO, le
+0. **Projet base de données dédié `ProjectZero.Database`** : il contient les entités de persistance, le
    `DbContext`, la fabrique design-time et les migrations (+ packages EF Core/Npgsql). C'est un
-   projet **feuille** (aucune référence projet). DAO et `DbContext` sont `internal`, exposés au
+   projet **feuille** (aucune référence projet). Entités de persistance et `DbContext` sont `internal`, exposés au
    seul `TvShow.Infrastructure` via `InternalsVisibleTo`.
-1. **DAO suffixés `Dao`** et **portant eux-mêmes leur configuration EF Core**.
-   Chaque DAO implémente `IEntityTypeConfiguration<XxxDao>` ; la méthode
-   `Configure(EntityTypeBuilder<XxxDao> builder)` vit **dans la classe DAO**. Le `DbContext`
+1. **Entités de persistance suffixées `Entity`** et **portant elles-mêmes leur configuration EF Core**.
+   Chaque entité implémente `IEntityTypeConfiguration<XxxEntity>` ; la méthode
+   `Configure(EntityTypeBuilder<XxxEntity> builder)` vit **dans la classe entité**. Le `DbContext`
    se contente d'`ApplyConfigurationsFromAssembly(...)`.
 2. **Repositories `internal`** implémentant le **port secondaire** `ITvShowRepository`,
    exposés uniquement via `AddInfrastructure(...)` (encapsulation : rien de `public` ne fuit
@@ -50,11 +50,11 @@ derrière le même port secondaire, sans casser l'hexagone ni le contrat HTTP ex
 3. **Coexistence** : `InMemoryTvShowRepository` est conservé (passé `internal`) et **le
    provider est sélectionnable par configuration** (`Persistence:Provider = InMemory | Postgres`,
    défaut `InMemory`). On ajoute `TvShowRepository` (EF/Postgres).
-4. **Périmètre** : modéliser **toutes les entités** (`TvShowDao`, `DirectorDao`, `WriterDao`,
-   `StarDao`, `GenreDao`) avec les **relations many-to-many** série ↔ personnes/genres
+4. **Périmètre** : modéliser **toutes les entités** (`TvShowEntity`, `DirectorEntity`, `WriterEntity`,
+   `StarEntity`, `GenreEntity`) avec les **relations many-to-many** série ↔ personnes/genres
    (mapping → domaine). Les tables de jointure sont **nommées explicitement**
    (`TvShowDirectors`, `TvShowWriters`, `TvShowStars`, `TvShowGenres`) pour ne pas exposer le
-   suffixe `Dao` dans le schéma.
+   suffixe `Entity` dans le schéma.
 5. **Migration initiale + seed** des deux séries existantes pour préserver le comportement de
    l'endpoint. Connection string dans `appsettings`, défaut local (docker-compose ultérieur).
 6. **Namespaces** : on **conserve** la racine `TvShow.*` actuelle (le renommage vers
@@ -65,13 +65,13 @@ derrière le même port secondaire, sans casser l'hexagone ni le contrat HTTP ex
 
 ## 3. État cible
 
-### 3.1 `ProjectZero.Database` — DAO + DbContext + migrations
-- **`Daos/*.cs`** : entités de persistance `internal sealed`, suffixe `Dao` (`TvShowDao`,
-  `DirectorDao`, `WriterDao`, `StarDao`, `GenreDao`), chacune implémentant
-  `IEntityTypeConfiguration<XxxDao>`. Elles portent les préoccupations EF (clé, longueurs,
-  contraintes, navigations) ; le domaine reste pur. `TvShowDao` configure les relations
+### 3.1 `ProjectZero.Database` — entités de persistance + DbContext + migrations
+- **`Entities/*.cs`** : entités de persistance `internal sealed`, suffixe `Entity` (`TvShowEntity`,
+  `DirectorEntity`, `WriterEntity`, `StarEntity`, `GenreEntity`), chacune implémentant
+  `IEntityTypeConfiguration<XxxEntity>`. Elles portent les préoccupations EF (clé, longueurs,
+  contraintes, navigations) ; le domaine reste pur. `TvShowEntity` configure les relations
   many-to-many (tables de jointure nommées).
-- **`TvShowDbContext.cs`** : `internal`, `DbSet<XxxDao>`, constructeur public, et
+- **`TvShowDbContext.cs`** : `internal`, `DbSet<XxxEntity>`, constructeur public, et
   `OnModelCreating` ⇒ `modelBuilder.ApplyConfigurationsFromAssembly(typeof(TvShowDbContext).Assembly)`.
 - **`TvShowDbContextFactory.cs`** : `internal`, `IDesignTimeDbContextFactory<TvShowDbContext>`
   pour les outils EF (`dotnet ef`), afin que l'Api n'ait pas à référencer `EF Core.Design`.
@@ -83,10 +83,10 @@ derrière le même port secondaire, sans casser l'hexagone ni le contrat HTTP ex
   éviter le conflit d'assembly `MSB3277`.
 
 ### 3.2 `TvShow.Infrastructure` — repositories + mapping + DI
-- **`Mapping/TvShowDaoMapper.cs`** : mapping `TvShowDao` → entité de domaine `TvShow`, y compris
+- **`Mapping/TvShowMapper.cs`** : mapping `TvShowEntity` → entité de domaine `TvShow`, y compris
   les collections liées (sans remonter les back-références → pas de cycle).
 - **`Repositories/TvShowRepository.cs`** : `internal sealed`, implémente `ITvShowRepository`,
-  lit via `TvShowDbContext` (`Include` des relations), **mappe DAO → domaine**, propage le
+  lit via `TvShowDbContext` (`Include` des relations), **mappe entité → domaine**, propage le
   `CancellationToken` (`AsNoTracking`, `ToListAsync(cancellationToken)`).
 - **`Repositories/InMemoryTvShowRepository.cs`** : `internal sealed`, comportement inchangé.
 - **`DependencyInjection.AddInfrastructure`** : lit `Persistence:Provider` ; si `Postgres`,
@@ -114,11 +114,11 @@ derrière le même port secondaire, sans casser l'hexagone ni le contrat HTTP ex
 
 1. **Projet `ProjectZero.Database`** : créer le projet (EF Core + Npgsql + Design,
    `InternalsVisibleTo` vers l'infra), l'ajouter à la solution. Compiler.
-2. **DAO + config** : créer les `XxxDao` (`internal`, `IEntityTypeConfiguration<XxxDao>`,
+2. **Entités + config** : créer les `XxxEntity` (`internal`, `IEntityTypeConfiguration<XxxEntity>`,
    relations sur le propriétaire). Compiler.
 3. **DbContext + fabrique** : `TvShowDbContext` (`ApplyConfigurationsFromAssembly`) +
    `TvShowDbContextFactory`. Compiler.
-4. **Mapping + repository EF** : `TvShowDaoMapper` + `TvShowRepository` (`internal sealed`, port
+4. **Mapping + repository EF** : `TvShowMapper` + `TvShowRepository` (`internal sealed`, port
    secondaire, token propagé) côté `TvShow.Infrastructure` (référence vers `ProjectZero.Database`).
    Compiler.
 5. **DI + config** : `AddInfrastructure` sélecteur de provider ; `InMemory…` → `internal` ;
@@ -136,15 +136,15 @@ derrière le même port secondaire, sans casser l'hexagone ni le contrat HTTP ex
 - [ ] `dotnet build` réussit (0 erreur, 0 nouveau warning).
 - [ ] `ProjectZero.Database` porte EF Core + Npgsql ; `Domain` et `Application` n'ont
       **aucune** dépendance EF/Npgsql ; `ProjectZero.Database` ne référence **aucun** projet.
-- [ ] Les `XxxDao` existent dans `ProjectZero.Database`, sont **`internal`**, suffixés `Dao`, et
-      **portent leur config EF Core** (`IEntityTypeConfiguration<XxxDao>` dans la classe).
-- [ ] DAO et `DbContext` sont visibles de la seule `TvShow.Infrastructure` via
+- [ ] Les `XxxEntity` existent dans `ProjectZero.Database`, sont **`internal`**, suffixés `Entity`, et
+      **portent leur config EF Core** (`IEntityTypeConfiguration<XxxEntity>` dans la classe).
+- [ ] Entités de persistance et `DbContext` sont visibles de la seule `TvShow.Infrastructure` via
       `InternalsVisibleTo`.
 - [ ] Le `DbContext` charge les configs via `ApplyConfigurationsFromAssembly` (pas de Fluent
       épars dans `OnModelCreating`).
 - [ ] `TvShowRepository` et `InMemoryTvShowRepository` sont **`internal`** et implémentent le
       port secondaire `ITvShowRepository` ; seule `AddInfrastructure` est `public`.
-- [ ] Mapping DAO → domaine en place (côté infra) ; aucun `Dao` ne fuit hors de l'infra.
+- [ ] Mapping entité → domaine en place (côté infra) ; aucune entité de persistance ne fuit hors de l'infra.
 - [ ] Provider sélectionnable par configuration ; `InMemory` par défaut marche sans base.
 - [ ] `CancellationToken` propagé jusqu'à EF (`ToListAsync(cancellationToken)`).
 - [ ] Une migration initiale existe ; le seed reproduit *Breaking Bad* et *The Last of Us*.

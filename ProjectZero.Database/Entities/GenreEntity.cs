@@ -1,17 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace ProjectZero.Database.Daos;
+namespace ProjectZero.Database.Entities;
 
-internal sealed class GenreDao : IEntityTypeConfiguration<GenreDao>
+internal sealed class GenreEntity : IEntityTypeConfiguration<GenreEntity>
 {
     public int Id { get; init; }
     public string Name { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;
 
-    public ICollection<TvShowDao> TvShows { get; init; } = new List<TvShowDao>();
+    public ICollection<TvShowEntity> TvShows { get; init; } = new List<TvShowEntity>();
 
-    public void Configure(EntityTypeBuilder<GenreDao> builder)
+    public void Configure(EntityTypeBuilder<GenreEntity> builder)
     {
         builder.ToTable("Genre");
 

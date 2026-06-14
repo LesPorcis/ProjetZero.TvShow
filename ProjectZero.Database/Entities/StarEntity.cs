@@ -1,17 +1,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace ProjectZero.Database.Daos;
+namespace ProjectZero.Database.Entities;
 
-internal sealed class StarDao : IEntityTypeConfiguration<StarDao>
+internal sealed class StarEntity : IEntityTypeConfiguration<StarEntity>
 {
     public int PersonId { get; init; }
     public int TvShowId { get; init; }
 
-    public PersonDao Person { get; init; } = null!;
-    public TvShowDao TvShow { get; init; } = null!;
+    public PersonEntity Person { get; init; } = null!;
+    public TvShowEntity TvShow { get; init; } = null!;
 
-    public void Configure(EntityTypeBuilder<StarDao> builder)
+    public void Configure(EntityTypeBuilder<StarEntity> builder)
     {
         builder.ToTable("Star");
 
