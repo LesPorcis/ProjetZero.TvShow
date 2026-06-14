@@ -10,8 +10,10 @@ design-time** et **migrations**.
 
 ## Dépendances
 
-Projet **feuille** : aucune référence projet. Porte EF Core / Npgsql / EF Core Design. Ouvert
-au seul adaptateur via `<InternalsVisibleTo Include="ProjectZero.TvShows.Infrastructure" />`.
+Projet **feuille** : aucune référence projet. Porte EF Core / Npgsql / EF Core Design. Entités et
+`DbContext` restent `internal`, ouverts au seul adaptateur via
+`<InternalsVisibleTo Include="ProjectZero.TvShows.Infrastructure" />` ; seule la DI
+(`AddEfPostgreSql`) est `public`.
 
 ## Conventions
 
@@ -27,6 +29,10 @@ au seul adaptateur via `<InternalsVisibleTo Include="ProjectZero.TvShows.Infrast
 - **`DbContext`** : constructeur primaire `(DbContextOptions<TvShowDbContext>)`. **Aucun `DbSet<>`
   exposé** : `OnModelCreating` fait `ApplyConfigurationsFromAssembly(...)`, l'accès se fait via
   `Set<XxxEntity>()` (côté Infrastructure).
+- **DI** (`DependencyInjection.cs`) : `public static AddEfPostgreSql(services, configuration)`
+  enregistre `AddDbContext<TvShowDbContext>(o => o.UseNpgsql(...))` en lisant
+  `ConnectionStrings:TvShowDb`. **Seule surface `public`** du projet (entités et `DbContext`
+  restent `internal`) ; appelée depuis le composition root (`ProjectZero.Web`).
 - **Fabrique design-time** `TvShowDbContextFactory` (`IDesignTimeDbContextFactory`) : lit
   `ConnectionStrings__TvShowDb` ou un défaut Postgres local. Le projet est **son propre
   startup-project** pour `dotnet ef`.
