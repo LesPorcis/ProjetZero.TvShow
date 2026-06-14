@@ -111,6 +111,10 @@ dotnet ef database update \
 
 - **Pas de migration automatique au démarrage** : application explicite via la CLI.
 - Le seed des données de référence se fait via `HasData(...)` dans la config du DAO concerné.
+- **Versionner les migrations dans un commit dédié** : les fichiers générés sous `Migrations/`
+  (`<timestamp>_<Name>.cs`, `.Designer.cs` et `TvShowDbContextModelSnapshot.cs`) sont committés
+  **seuls**, isolés des changements de code applicatif. Un diff de migration séparé est plus
+  simple à relire, à régénérer (`ef migrations remove` puis `add`) et à revert.
 
 > **Versions des packages** : le provider stable `Npgsql.EntityFrameworkCore.PostgreSQL`
 > (10.0.2) est compilé contre `Microsoft.EntityFrameworkCore.Relational 10.0.4`. On aligne donc
