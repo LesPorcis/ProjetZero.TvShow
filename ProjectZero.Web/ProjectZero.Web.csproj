@@ -21,8 +21,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ProjectZero.TvShows.Api\ProjectZero.TvShows.Api.csproj" />
-    <ProjectReference Include="..\ProjectZero.TvShows.Application\ProjectZero.TvShows.Application.csproj" />
-    <ProjectReference Include="..\ProjectZero.TvShows.Infrastructure\ProjectZero.TvShows.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

@@ -6,10 +6,7 @@ namespace ProjectZero.TvShows.Application;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddApplication(this IServiceCollection services)
-    {
-        services.AddScoped<ITvShowsCatalog, TvShowsCatalog>();
-
-        return services;
-    }
+    public static IServiceCollection AddApplication(this IServiceCollection services) => 
+        services
+            .AddScoped<ITvShowsCatalog, TvShowsCatalog>();
 }

@@ -21,9 +21,15 @@ Traduisent les entités de persistance vers le `Domain`.
   `AsNoTracking()`, `Include`/`ThenInclude`, `ToListAsync(cancellationToken)`.
 - **Mappers** (`Mapping/`) : `internal static`, **un fichier par type**, `ToDomain`/`ToDomains`
   (entité de persistance → domaine). Explicite, sans AutoMapper, sans back-référence (pas de cycle).
-- **Sélection du provider** dans `AddInfrastructure`, via `Persistence:Provider` (défaut `InMemory`) :
+- **DI scindée en deux fichiers** :
+  - `DependencyInjection.cs` : `AddInfrastructure` (seule API publique) orchestre — appelle
+    `AddDatabase(...)` puis une méthode privée **par module** (`AddTvShowsModule`) qui enregistre
+    les repositories du module.
+  - `DatabaseDependencyInjection.cs` : `AddDatabase(...)` enregistre le `DbContext` / le provider EF.
+- **Sélection du provider** via `Persistence:Provider` (défaut `InMemory`), lue par le helper
+  `UsePostgres()` :
   - `Postgres` ⇒ `AddDbContext<TvShowDbContext>(o => o.UseNpgsql(...))` + `TvShowsRepository` (scoped).
-  - `InMemory` ⇒ `MockedTvShowsRepository` (singleton).
+  - `InMemory` ⇒ `MockedTvShowsRepository` (singleton), pas de `DbContext`.
 - Connection string : `ConnectionStrings:TvShowDb`. Défaut = Postgres **local**, secrets hors git.
 
 ## À ne pas faire
@@ -34,5 +40,7 @@ Traduisent les entités de persistance vers le `Domain`.
 
 ## Points d'entrée
 
+- **Nouveau module** : méthode privée `AddXxxModule` dans `DependencyInjection.cs`, appelée par
+  `AddInfrastructure`, qui enregistre les repositories du module.
 - **Nouvel adaptateur de persistance** : mapper `ToDomain` sous `Mapping/` + repository
-  `internal sealed` implémentant le port Out, câblé dans `AddInfrastructure`.
+  `internal sealed` implémentant le port Out, enregistré dans la méthode du module concerné.
