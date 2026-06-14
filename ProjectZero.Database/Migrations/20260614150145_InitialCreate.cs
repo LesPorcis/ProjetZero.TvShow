@@ -15,7 +15,7 @@ namespace ProjectZero.Database.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Genre",
+                name: "Genres",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -25,11 +25,11 @@ namespace ProjectZero.Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Genre", x => x.Id);
+                    table.PrimaryKey("PK_Genres", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Person",
+                name: "Persons",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -39,11 +39,11 @@ namespace ProjectZero.Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Person", x => x.Id);
+                    table.PrimaryKey("PK_Persons", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "TvShow",
+                name: "TvShows",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -55,11 +55,11 @@ namespace ProjectZero.Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TvShow", x => x.Id);
+                    table.PrimaryKey("PK_TvShows", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Director",
+                name: "Directors",
                 columns: table => new
                 {
                     PersonId = table.Column<int>(type: "integer", nullable: false),
@@ -67,23 +67,23 @@ namespace ProjectZero.Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Director", x => new { x.PersonId, x.TvShowId });
+                    table.PrimaryKey("PK_Directors", x => new { x.PersonId, x.TvShowId });
                     table.ForeignKey(
-                        name: "FK_Director_Person_PersonId",
+                        name: "FK_Directors_Persons_PersonId",
                         column: x => x.PersonId,
-                        principalTable: "Person",
+                        principalTable: "Persons",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Director_TvShow_TvShowId",
+                        name: "FK_Directors_TvShows_TvShowId",
                         column: x => x.TvShowId,
-                        principalTable: "TvShow",
+                        principalTable: "TvShows",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Star",
+                name: "Stars",
                 columns: table => new
                 {
                     PersonId = table.Column<int>(type: "integer", nullable: false),
@@ -91,17 +91,17 @@ namespace ProjectZero.Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Star", x => new { x.PersonId, x.TvShowId });
+                    table.PrimaryKey("PK_Stars", x => new { x.PersonId, x.TvShowId });
                     table.ForeignKey(
-                        name: "FK_Star_Person_PersonId",
+                        name: "FK_Stars_Persons_PersonId",
                         column: x => x.PersonId,
-                        principalTable: "Person",
+                        principalTable: "Persons",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Star_TvShow_TvShowId",
+                        name: "FK_Stars_TvShows_TvShowId",
                         column: x => x.TvShowId,
-                        principalTable: "TvShow",
+                        principalTable: "TvShows",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -117,21 +117,21 @@ namespace ProjectZero.Database.Migrations
                 {
                     table.PrimaryKey("PK_TvShowGenres", x => new { x.GenresId, x.TvShowsId });
                     table.ForeignKey(
-                        name: "FK_TvShowGenres_Genre_GenresId",
+                        name: "FK_TvShowGenres_Genres_GenresId",
                         column: x => x.GenresId,
-                        principalTable: "Genre",
+                        principalTable: "Genres",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_TvShowGenres_TvShow_TvShowsId",
+                        name: "FK_TvShowGenres_TvShows_TvShowsId",
                         column: x => x.TvShowsId,
-                        principalTable: "TvShow",
+                        principalTable: "TvShows",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Writer",
+                name: "Writers",
                 columns: table => new
                 {
                     PersonId = table.Column<int>(type: "integer", nullable: false),
@@ -139,23 +139,23 @@ namespace ProjectZero.Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Writer", x => new { x.PersonId, x.TvShowId });
+                    table.PrimaryKey("PK_Writers", x => new { x.PersonId, x.TvShowId });
                     table.ForeignKey(
-                        name: "FK_Writer_Person_PersonId",
+                        name: "FK_Writers_Persons_PersonId",
                         column: x => x.PersonId,
-                        principalTable: "Person",
+                        principalTable: "Persons",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Writer_TvShow_TvShowId",
+                        name: "FK_Writers_TvShows_TvShowId",
                         column: x => x.TvShowId,
-                        principalTable: "TvShow",
+                        principalTable: "TvShows",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.InsertData(
-                table: "TvShow",
+                table: "TvShows",
                 columns: new[] { "Id", "Episodes", "Name", "ReleasedAt", "Seasons" },
                 values: new object[,]
                 {
@@ -164,19 +164,19 @@ namespace ProjectZero.Database.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Director_TvShowId",
-                table: "Director",
+                name: "IX_Directors_TvShowId",
+                table: "Directors",
                 column: "TvShowId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Genre_Name",
-                table: "Genre",
+                name: "IX_Genres_Name",
+                table: "Genres",
                 column: "Name",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Star_TvShowId",
-                table: "Star",
+                name: "IX_Stars_TvShowId",
+                table: "Stars",
                 column: "TvShowId");
 
             migrationBuilder.CreateIndex(
@@ -185,8 +185,8 @@ namespace ProjectZero.Database.Migrations
                 column: "TvShowsId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Writer_TvShowId",
-                table: "Writer",
+                name: "IX_Writers_TvShowId",
+                table: "Writers",
                 column: "TvShowId");
         }
 
@@ -194,25 +194,25 @@ namespace ProjectZero.Database.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Director");
+                name: "Directors");
 
             migrationBuilder.DropTable(
-                name: "Star");
+                name: "Stars");
 
             migrationBuilder.DropTable(
                 name: "TvShowGenres");
 
             migrationBuilder.DropTable(
-                name: "Writer");
+                name: "Writers");
 
             migrationBuilder.DropTable(
-                name: "Genre");
+                name: "Genres");
 
             migrationBuilder.DropTable(
-                name: "Person");
+                name: "Persons");
 
             migrationBuilder.DropTable(
-                name: "TvShow");
+                name: "TvShows");
         }
     }
 }
