@@ -9,19 +9,18 @@ namespace ProjectZero.TvShows.Infrastructure.Repositories;
 
 internal sealed class TvShowsRepository(TvShowDbContext dbContext) : ITvShowsRepository
 {
-    private IQueryable<TvShowDao> ReadOnlySet() => dbContext.TvShows
+    private IQueryable<TvShowDao> ReadOnlySet() => dbContext.Set<TvShowDao>()
         .AsNoTracking()
-        .Include(tvShow => tvShow.Directors)
-        .Include(tvShow => tvShow.Writers)
-        .Include(tvShow => tvShow.Stars)
+        .Include(tvShow => tvShow.Directors).ThenInclude(director => director.Person)
+        .Include(tvShow => tvShow.Writers).ThenInclude(writer => writer.Person)
+        .Include(tvShow => tvShow.Stars).ThenInclude(star => star.Person)
         .Include(tvShow => tvShow.Genres);
 
-    public async Task<IReadOnlyCollection<TvShow>> GetAllAsync(
-        CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyCollection<TvShow>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var daos = await ReadOnlySet()
+        var tvShowDaos = await ReadOnlySet()
             .ToListAsync(cancellationToken);
 
-        return daos.ToDomains();
+        return tvShowDaos.ToDomains();
     }
 }

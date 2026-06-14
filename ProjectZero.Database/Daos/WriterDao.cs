@@ -5,22 +5,24 @@ namespace ProjectZero.Database.Daos;
 
 internal sealed class WriterDao : IEntityTypeConfiguration<WriterDao>
 {
-    public int Id { get; set; }
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
+    public int PersonId { get; init; }
+    public int TvShowId { get; init; }
 
-    public ICollection<TvShowDao> TvShows { get; set; } = new List<TvShowDao>();
+    public PersonDao Person { get; init; } = null!;
+    public TvShowDao TvShow { get; init; } = null!;
 
     public void Configure(EntityTypeBuilder<WriterDao> builder)
     {
-        builder.HasKey(writer => writer.Id);
+        builder.ToTable("Writer");
 
-        builder.Property(writer => writer.FirstName)
-            .HasMaxLength(128)
-            .IsRequired();
+        builder.HasKey(writer => new { writer.PersonId, writer.TvShowId });
 
-        builder.Property(writer => writer.LastName)
-            .HasMaxLength(128)
-            .IsRequired();
+        builder.HasOne(writer => writer.Person)
+            .WithMany(person => person.WriterRoles)
+            .HasForeignKey(writer => writer.PersonId);
+
+        builder.HasOne(writer => writer.TvShow)
+            .WithMany(tvShow => tvShow.Writers)
+            .HasForeignKey(writer => writer.TvShowId);
     }
 }

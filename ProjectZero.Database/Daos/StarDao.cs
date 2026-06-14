@@ -5,22 +5,24 @@ namespace ProjectZero.Database.Daos;
 
 internal sealed class StarDao : IEntityTypeConfiguration<StarDao>
 {
-    public int Id { get; set; }
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
+    public int PersonId { get; init; }
+    public int TvShowId { get; init; }
 
-    public ICollection<TvShowDao> TvShows { get; set; } = new List<TvShowDao>();
+    public PersonDao Person { get; init; } = null!;
+    public TvShowDao TvShow { get; init; } = null!;
 
     public void Configure(EntityTypeBuilder<StarDao> builder)
     {
-        builder.HasKey(star => star.Id);
+        builder.ToTable("Star");
 
-        builder.Property(star => star.FirstName)
-            .HasMaxLength(128)
-            .IsRequired();
+        builder.HasKey(star => new { star.PersonId, star.TvShowId });
 
-        builder.Property(star => star.LastName)
-            .HasMaxLength(128)
-            .IsRequired();
+        builder.HasOne(star => star.Person)
+            .WithMany(person => person.StarRoles)
+            .HasForeignKey(star => star.PersonId);
+
+        builder.HasOne(star => star.TvShow)
+            .WithMany(tvShow => tvShow.Stars)
+            .HasForeignKey(star => star.TvShowId);
     }
 }

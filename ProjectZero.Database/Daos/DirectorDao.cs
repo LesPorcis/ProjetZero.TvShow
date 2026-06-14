@@ -5,22 +5,24 @@ namespace ProjectZero.Database.Daos;
 
 internal sealed class DirectorDao : IEntityTypeConfiguration<DirectorDao>
 {
-    public int Id { get; set; }
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
+    public int PersonId { get; init; }
+    public int TvShowId { get; init; }
 
-    public ICollection<TvShowDao> TvShows { get; set; } = new List<TvShowDao>();
+    public PersonDao Person { get; init; } = null!;
+    public TvShowDao TvShow { get; init; } = null!;
 
     public void Configure(EntityTypeBuilder<DirectorDao> builder)
     {
-        builder.HasKey(director => director.Id);
+        builder.ToTable("Director");
 
-        builder.Property(director => director.FirstName)
-            .HasMaxLength(128)
-            .IsRequired();
+        builder.HasKey(director => new { director.PersonId, director.TvShowId });
 
-        builder.Property(director => director.LastName)
-            .HasMaxLength(128)
-            .IsRequired();
+        builder.HasOne(director => director.Person)
+            .WithMany(person => person.DirectorRoles)
+            .HasForeignKey(director => director.PersonId);
+
+        builder.HasOne(director => director.TvShow)
+            .WithMany(tvShow => tvShow.Directors)
+            .HasForeignKey(director => director.TvShowId);
     }
 }

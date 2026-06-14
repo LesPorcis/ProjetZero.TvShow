@@ -10,26 +10,22 @@ internal sealed class TvShowDao : IEntityTypeConfiguration<TvShowDao>
     public DateOnly? ReleasedAt { get; init; }
     public int Seasons { get; init; }
     public int Episodes { get; init; }
-    
-    public List<DirectorDao> Directors { get; init; } = new List<DirectorDao>();
-    public List<WriterDao> Writers { get; init; } = new List<WriterDao>();
-    public List<StarDao> Stars { get; init; } = new List<StarDao>();
-    public List<GenreDao> Genres { get; init; } = new List<GenreDao>();
-    
+
+    public ICollection<DirectorDao> Directors { get; init; } = new List<DirectorDao>();
+    public ICollection<WriterDao> Writers { get; init; } = new List<WriterDao>();
+    public ICollection<StarDao> Stars { get; init; } = new List<StarDao>();
+    public ICollection<GenreDao> Genres { get; init; } = new List<GenreDao>();
+
     public void Configure(EntityTypeBuilder<TvShowDao> builder)
     {
+        builder.ToTable("TvShow");
+
         builder.HasKey(tvShow => tvShow.Id);
 
         builder.Property(tvShow => tvShow.Name)
             .HasMaxLength(256)
             .IsRequired();
-        
-        builder.HasMany(tvShow => tvShow.Directors).WithMany(director => director.TvShows)
-            .UsingEntity(join => join.ToTable("TvShowDirectors"));
-        builder.HasMany(tvShow => tvShow.Writers).WithMany(writer => writer.TvShows)
-            .UsingEntity(join => join.ToTable("TvShowWriters"));
-        builder.HasMany(tvShow => tvShow.Stars).WithMany(star => star.TvShows)
-            .UsingEntity(join => join.ToTable("TvShowStars"));
+
         builder.HasMany(tvShow => tvShow.Genres).WithMany(genre => genre.TvShows)
             .UsingEntity(join => join.ToTable("TvShowGenres"));
 
