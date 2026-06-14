@@ -6,8 +6,8 @@
 ## Rôle
 
 **Adaptateur primaire** (REST) : `Controllers`, `ViewModels` et `Mappers` domaine → ViewModel.
-C'est une **bibliothèque de classes**, pas le point de démarrage : `ProjectZero.Web` charge ses
-controllers via `AddApplicationPart`.
+C'est une **bibliothèque de classes**, pas le point de démarrage : ses controllers sont
+**découverts automatiquement** par `ProjectZero.Web` via la `ProjectReference`.
 
 ## Dépendances
 

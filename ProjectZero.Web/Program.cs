@@ -1,11 +1,9 @@
-using ProjectZero.TvShows.Api.Controllers;
 using ProjectZero.TvShows.Application;
 using ProjectZero.TvShows.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers()
-    .AddApplicationPart(typeof(TvShowsController).Assembly);
+builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);

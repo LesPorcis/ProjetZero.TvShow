@@ -14,12 +14,11 @@ SDK `Microsoft.NET.Sdk.Web`.
 
 ## Conventions
 
-- `Program.cs` câble tout au même endroit :
-  `AddControllers().AddApplicationPart(typeof(TvShowsController).Assembly)`, `AddOpenApi()`,
+- `Program.cs` câble tout au même endroit : `AddControllers()`, `AddOpenApi()`,
   `AddApplication()`, `AddInfrastructure(builder.Configuration)`, puis `UseHttpsRedirection()`
   et `MapControllers()`.
-- Les controllers vivant dans `Api` (bibliothèque), ils sont chargés explicitement via
-  `AddApplicationPart`.
+- Les controllers vivent dans `Api` (bibliothèque) mais sont **découverts automatiquement** via
+  la `ProjectReference` : pas besoin de `AddApplicationPart`.
 - **OpenAPI** : généré au build (`openapi.json`), via les réglages `OpenApiGenerate*` du `.csproj`.
 - **Configuration** : `appsettings.json` porte `Persistence:Provider` et
   `ConnectionStrings:TvShowDb`. Aucun secret committé.
