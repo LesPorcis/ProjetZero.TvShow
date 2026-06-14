@@ -1,15 +1,8 @@
 namespace ProjectZero.TvShows.Domain;
 
-public sealed class Genre
+public sealed class Genre(int id, string name, string description)
 {
-    public Genre(int id, string name, string description)
-    {
-        Id = id;
-        Name = name;
-        Description = description;
-    }
-
-    public int Id { get; }
-    public string Name { get; }
-    public string Description { get; }
+    public int Id { get; } = id;
+    public string Name { get; } = name;
+    public string Description { get; } = description;
 }

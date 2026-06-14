@@ -1,37 +1,26 @@
 namespace ProjectZero.TvShows.Domain;
 
 public sealed class TvShow
+(
+    int id,
+    string name,
+    DateOnly? releasedAt,
+    int seasons,
+    int episodes,
+    IReadOnlyCollection<Director> directors,
+    IReadOnlyCollection<Writer> writers,
+    IReadOnlyCollection<Star> stars,
+    IReadOnlyCollection<Genre> genres
+)
 {
-    public TvShow(
-        int id,
-        string name,
-        DateOnly? releasedAt,
-        int seasons,
-        int episodes,
-        IReadOnlyCollection<Director>? directors = null,
-        IReadOnlyCollection<Writer>? writers = null,
-        IReadOnlyCollection<Star>? stars = null,
-        IReadOnlyCollection<Genre>? genres = null)
-    {
-        Id = id;
-        Name = name;
-        ReleasedAt = releasedAt;
-        Seasons = seasons;
-        Episodes = episodes;
-        Directors = directors is null ? [] : [.. directors];
-        Writers = writers is null ? [] : [.. writers];
-        Stars = stars is null ? [] : [.. stars];
-        Genres = genres is null ? [] : [.. genres];
-    }
+    public int Id { get; } = id;
+    public string Name { get; } = name;
+    public DateOnly? ReleasedAt { get; } = releasedAt;
+    public int Seasons { get; } = seasons;
+    public int Episodes { get; } = episodes;
 
-    public int Id { get; }
-    public string Name { get; }
-    public DateOnly? ReleasedAt { get; }
-    public int Seasons { get; }
-    public int Episodes { get; }
-
-    public IReadOnlyCollection<Director> Directors { get; }
-    public IReadOnlyCollection<Writer> Writers { get; }
-    public IReadOnlyCollection<Star> Stars { get; }
-    public IReadOnlyCollection<Genre> Genres { get; }
+    public IReadOnlyCollection<Director> Directors { get; } = directors;
+    public IReadOnlyCollection<Writer> Writers { get; } = writers;
+    public IReadOnlyCollection<Star> Stars { get; } = stars;
+    public IReadOnlyCollection<Genre> Genres { get; } = genres;
 }

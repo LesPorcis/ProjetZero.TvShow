@@ -1,15 +1,8 @@
 namespace ProjectZero.TvShows.Domain;
 
-public sealed class Director
+public sealed class Director(int id, string firstName, string lastName)
 {
-    public Director(int id, string firstName, string lastName)
-    {
-        Id = id;
-        FirstName = firstName;
-        LastName = lastName;
-    }
-
-    public int Id { get; }
-    public string FirstName { get; }
-    public string LastName { get; }
+    public int Id { get; } = id;
+    public string FirstName { get; } = firstName;
+    public string LastName { get; } = lastName;
 }
