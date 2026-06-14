@@ -26,11 +26,9 @@ dotnet ef database update      --project ProjectZero.Database --startup-project 
 - La fabrique design-time lit la connection string depuis la variable d'environnement `ConnectionStrings__TvShowDb` (sinon un Postgres local par défaut).
 - **Committer les fichiers de `Migrations/` dans un commit dédié**, isolé du code applicatif.
 
-### Choix du provider de persistance
+### Persistance
 
-Réglé par configuration, pas par recompilation — clé `Persistence:Provider` dans `ProjectZero.Web/appsettings.json` :
-- `InMemory` (défaut) → `MockedTvShowsRepository`, aucune base requise.
-- `Postgres` → `TvShowsRepository` + `TvShowDbContext` sur `ConnectionStrings:TvShowDb`.
+**PostgreSQL est le seul provider** (plus de mode `InMemory` ni de clé `Persistence:Provider`). Le câblage se fait au composition root : `ProjectZero.Web` appelle `AddDatabase(builder.Configuration)` → `AddEfPostgreSql(...)` (`ProjectZero.Database`), qui enregistre `TvShowDbContext` via `UseNpgsql(...)` en lisant `ConnectionStrings:TvShowDb`. Le repository `TvShowsRepository` est enregistré par `AddInfrastructure()`.
 
 ## Architecture
 
@@ -51,12 +49,12 @@ Les 6 projets et leurs rôles :
 |---|---|---|
 | **Domain** | Entités métier pures (`TvShow`, `Director`, `Writer`, `Star`, `Genre`). `public sealed`, constructeurs primaires, propriétés en lecture seule. **Zéro dépendance**, aucune préoccupation EF. | — |
 | **Application** | Cœur applicatif. Ports primaires (`Ports/In/ITvShowsCatalog`) et secondaires (`Ports/Out/ITvShowsRepository`), use cases (`UseCases/TvShowsCatalog`, `internal sealed`). Expose `AddApplication()`. | Domain |
-| **Infrastructure** | Adaptateurs **pilotés** : implémentent les ports `Out`. Repositories + mapping persistance→domaine. Expose `AddInfrastructure(IConfiguration)`. | Application, Domain, Database |
+| **Infrastructure** | Adaptateurs **pilotés** : implémentent les ports `Out`. Repositories + mapping persistance→domaine. Expose `AddInfrastructure()`. | Application, Domain, Database |
 | **Database** | Projet technique de persistance (**feuille, aucune référence projet**). Entités EF, `DbContext`, fabrique design-time, migrations. Porte les packages EF Core / Npgsql. | — |
-| **Api** | Adaptateur **primaire** : Controllers, ViewModels, mappers domaine→ViewModel. Bibliothèque de classes (`FrameworkReference Microsoft.AspNetCore.App`), **pas** le host. | Application, Domain |
-| **Web** | Host / point d'entrée (`Program.cs`, `appsettings.json`). Câble tout, génère `openapi.json` au build. | Api, Application, Infrastructure |
+| **Api** | Adaptateur **primaire** : Controllers, ViewModels, mappers domaine→ViewModel. Bibliothèque de classes (`FrameworkReference Microsoft.AspNetCore.App`), **pas** le host. Référence `Infrastructure` uniquement pour composer la DI du module (`AddTvShowsModule`). | Application, Domain, Infrastructure |
+| **Web** | Host / point d'entrée (`Program.cs`, `appsettings.json`). Câble tout, génère `openapi.json` au build. | Api |
 
-> Les contrôleurs vivent dans `Api` (lib) et sont chargés par `Web` via `AddApplicationPart(typeof(TvShowsController).Assembly)`.
+> Les contrôleurs vivent dans `Api` (lib) et sont **découverts automatiquement** par `Web` via la `ProjectReference` (pas de `AddApplicationPart`).
 
 ### Règles impératives (priment sur les habitudes par défaut)
 
@@ -67,6 +65,10 @@ Les 6 projets et leurs rôles :
 - **Repositories** : `internal sealed`, implémentent un port `Out`, renvoient des **entités de domaine**, propagent le `CancellationToken` jusqu'à EF (`AsNoTracking()` + `Include(...)` + `ToListAsync(ct)`).
 - **Aucun secret committé** : la connection string par défaut vise un Postgres local ; les vraies valeurs passent par `appsettings.*.json` / variables d'environnement.
 
-La documentation détaillée de ces conventions (avec checklists d'ajout d'entité / d'adaptateur) vit dans :
-- [`doc/instructions/database-instructions.md`](doc/instructions/database-instructions.md)
-- [`doc/instructions/infrastructure-instructions.md`](doc/instructions/infrastructure-instructions.md)
+La documentation détaillée par couche (rôle, conventions, checklists d'ajout) vit dans `doc/instructions/` :
+- [`domain-instructions.md`](doc/instructions/domain-instructions.md)
+- [`application-instructions.md`](doc/instructions/application-instructions.md)
+- [`api-instructions.md`](doc/instructions/api-instructions.md)
+- [`infrastructure-instructions.md`](doc/instructions/infrastructure-instructions.md)
+- [`database-instructions.md`](doc/instructions/database-instructions.md)
+- [`web-instructions.md`](doc/instructions/web-instructions.md)
