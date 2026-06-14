@@ -1,8 +1,10 @@
 namespace ProjectZero.TvShows.Api.ViewModels;
 
-public sealed record TvShowViewModel(
-    int Id,
-    string Name,
-    DateOnly? ReleasedAt,
-    int Seasons,
-    int Episodes);
+public sealed class TvShowViewModel
+{
+    public required int Id { get; init; }
+    public required string Name { get; init; }
+    public DateOnly? ReleasedAt { get; init; }
+    public required int Seasons { get; init; }
+    public required int Episodes { get; init; }
+}
