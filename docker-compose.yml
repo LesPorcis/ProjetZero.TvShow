@@ -1,0 +1,47 @@
+# Stack de développement local : PostgreSQL + Adminer (UI d'administration).
+#
+# Démarrer :   docker compose up -d
+# Arrêter  :   docker compose down            (les données persistent dans le volume)
+# Réinit.  :   docker compose down -v          (supprime aussi le volume = base vide)
+#
+# - Postgres est exposé sur le port hôte 5433 (le 5432 est déjà pris par le PG local).
+#   Connection string app : Host=localhost;Port=5433;Database=tvshow;Username=postgres;Password=postgres
+#   (cf. ProjectZero.Web/appsettings.Docker.json — lancer l'API avec ASPNETCORE_ENVIRONMENT=Docker).
+# - Adminer est disponible sur http://localhost:8080 (serveur pré-rempli : "db").
+# - Les migrations EF ne sont PAS appliquées automatiquement (convention du dépôt) :
+#       $env:ConnectionStrings__TvShowDb = "Host=localhost;Port=5433;Database=tvshow;Username=postgres;Password=postgres"
+#       dotnet ef database update --project ProjectZero.Database --startup-project ProjectZero.Database
+
+services:
+  db:
+    image: postgres:17
+    container_name: projectzero-tvshow-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tvshow
+    ports:
+      - "5433:5432"
+    volumes:
+      - tvshow-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d tvshow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  adminer:
+    image: adminer:5
+    container_name: projectzero-tvshow-adminer
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  tvshow-db-data:
