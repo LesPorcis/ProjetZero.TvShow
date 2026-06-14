@@ -15,21 +15,7 @@ namespace ProjectZero.Database.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Directors",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    FirstName = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
-                    LastName = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Directors", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Genres",
+                name: "Genre",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -39,11 +25,11 @@ namespace ProjectZero.Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Genres", x => x.Id);
+                    table.PrimaryKey("PK_Genre", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Stars",
+                name: "Person",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -53,11 +39,11 @@ namespace ProjectZero.Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Stars", x => x.Id);
+                    table.PrimaryKey("PK_Person", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "TvShows",
+                name: "TvShow",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -69,43 +55,53 @@ namespace ProjectZero.Database.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TvShows", x => x.Id);
+                    table.PrimaryKey("PK_TvShow", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Writers",
+                name: "Director",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    FirstName = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
-                    LastName = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false)
+                    PersonId = table.Column<int>(type: "integer", nullable: false),
+                    TvShowId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Writers", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "TvShowDirectors",
-                columns: table => new
-                {
-                    DirectorsId = table.Column<int>(type: "integer", nullable: false),
-                    TvShowsId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TvShowDirectors", x => new { x.DirectorsId, x.TvShowsId });
+                    table.PrimaryKey("PK_Director", x => new { x.PersonId, x.TvShowId });
                     table.ForeignKey(
-                        name: "FK_TvShowDirectors_Directors_DirectorsId",
-                        column: x => x.DirectorsId,
-                        principalTable: "Directors",
+                        name: "FK_Director_Person_PersonId",
+                        column: x => x.PersonId,
+                        principalTable: "Person",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_TvShowDirectors_TvShows_TvShowsId",
-                        column: x => x.TvShowsId,
-                        principalTable: "TvShows",
+                        name: "FK_Director_TvShow_TvShowId",
+                        column: x => x.TvShowId,
+                        principalTable: "TvShow",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Star",
+                columns: table => new
+                {
+                    PersonId = table.Column<int>(type: "integer", nullable: false),
+                    TvShowId = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Star", x => new { x.PersonId, x.TvShowId });
+                    table.ForeignKey(
+                        name: "FK_Star_Person_PersonId",
+                        column: x => x.PersonId,
+                        principalTable: "Person",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Star_TvShow_TvShowId",
+                        column: x => x.TvShowId,
+                        principalTable: "TvShow",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -121,69 +117,45 @@ namespace ProjectZero.Database.Migrations
                 {
                     table.PrimaryKey("PK_TvShowGenres", x => new { x.GenresId, x.TvShowsId });
                     table.ForeignKey(
-                        name: "FK_TvShowGenres_Genres_GenresId",
+                        name: "FK_TvShowGenres_Genre_GenresId",
                         column: x => x.GenresId,
-                        principalTable: "Genres",
+                        principalTable: "Genre",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_TvShowGenres_TvShows_TvShowsId",
+                        name: "FK_TvShowGenres_TvShow_TvShowsId",
                         column: x => x.TvShowsId,
-                        principalTable: "TvShows",
+                        principalTable: "TvShow",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "TvShowStars",
+                name: "Writer",
                 columns: table => new
                 {
-                    StarsId = table.Column<int>(type: "integer", nullable: false),
-                    TvShowsId = table.Column<int>(type: "integer", nullable: false)
+                    PersonId = table.Column<int>(type: "integer", nullable: false),
+                    TvShowId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TvShowStars", x => new { x.StarsId, x.TvShowsId });
+                    table.PrimaryKey("PK_Writer", x => new { x.PersonId, x.TvShowId });
                     table.ForeignKey(
-                        name: "FK_TvShowStars_Stars_StarsId",
-                        column: x => x.StarsId,
-                        principalTable: "Stars",
+                        name: "FK_Writer_Person_PersonId",
+                        column: x => x.PersonId,
+                        principalTable: "Person",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_TvShowStars_TvShows_TvShowsId",
-                        column: x => x.TvShowsId,
-                        principalTable: "TvShows",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "TvShowWriters",
-                columns: table => new
-                {
-                    TvShowsId = table.Column<int>(type: "integer", nullable: false),
-                    WritersId = table.Column<int>(type: "integer", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TvShowWriters", x => new { x.TvShowsId, x.WritersId });
-                    table.ForeignKey(
-                        name: "FK_TvShowWriters_TvShows_TvShowsId",
-                        column: x => x.TvShowsId,
-                        principalTable: "TvShows",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_TvShowWriters_Writers_WritersId",
-                        column: x => x.WritersId,
-                        principalTable: "Writers",
+                        name: "FK_Writer_TvShow_TvShowId",
+                        column: x => x.TvShowId,
+                        principalTable: "TvShow",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.InsertData(
-                table: "TvShows",
+                table: "TvShow",
                 columns: new[] { "Id", "Episodes", "Name", "ReleasedAt", "Seasons" },
                 values: new object[,]
                 {
@@ -192,15 +164,20 @@ namespace ProjectZero.Database.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Genres_Name",
-                table: "Genres",
+                name: "IX_Director_TvShowId",
+                table: "Director",
+                column: "TvShowId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Genre_Name",
+                table: "Genre",
                 column: "Name",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_TvShowDirectors_TvShowsId",
-                table: "TvShowDirectors",
-                column: "TvShowsId");
+                name: "IX_Star_TvShowId",
+                table: "Star",
+                column: "TvShowId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TvShowGenres_TvShowsId",
@@ -208,45 +185,34 @@ namespace ProjectZero.Database.Migrations
                 column: "TvShowsId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TvShowStars_TvShowsId",
-                table: "TvShowStars",
-                column: "TvShowsId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_TvShowWriters_WritersId",
-                table: "TvShowWriters",
-                column: "WritersId");
+                name: "IX_Writer_TvShowId",
+                table: "Writer",
+                column: "TvShowId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "TvShowDirectors");
+                name: "Director");
+
+            migrationBuilder.DropTable(
+                name: "Star");
 
             migrationBuilder.DropTable(
                 name: "TvShowGenres");
 
             migrationBuilder.DropTable(
-                name: "TvShowStars");
+                name: "Writer");
 
             migrationBuilder.DropTable(
-                name: "TvShowWriters");
+                name: "Genre");
 
             migrationBuilder.DropTable(
-                name: "Directors");
+                name: "Person");
 
             migrationBuilder.DropTable(
-                name: "Genres");
-
-            migrationBuilder.DropTable(
-                name: "Stars");
-
-            migrationBuilder.DropTable(
-                name: "TvShows");
-
-            migrationBuilder.DropTable(
-                name: "Writers");
+                name: "TvShow");
         }
     }
 }

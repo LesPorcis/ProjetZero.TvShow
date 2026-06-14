@@ -12,7 +12,7 @@ using ProjectZero.Database;
 namespace ProjectZero.Database.Migrations
 {
     [DbContext(typeof(TvShowDbContext))]
-    [Migration("20260613172428_InitialCreate")]
+    [Migration("20260614005947_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -24,21 +24,6 @@ namespace ProjectZero.Database.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("DirectorDaoTvShowDao", b =>
-                {
-                    b.Property<int>("DirectorsId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TvShowsId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("DirectorsId", "TvShowsId");
-
-                    b.HasIndex("TvShowsId");
-
-                    b.ToTable("TvShowDirectors", (string)null);
-                });
 
             modelBuilder.Entity("GenreDaoTvShowDao", b =>
                 {
@@ -57,25 +42,17 @@ namespace ProjectZero.Database.Migrations
 
             modelBuilder.Entity("ProjectZero.Database.Daos.DirectorDao", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("PersonId")
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<int>("TvShowId")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
+                    b.HasKey("PersonId", "TvShowId");
 
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
+                    b.HasIndex("TvShowId");
 
-                    b.HasKey("Id");
-
-                    b.ToTable("Directors");
+                    b.ToTable("Director", (string)null);
                 });
 
             modelBuilder.Entity("ProjectZero.Database.Daos.GenreDao", b =>
@@ -101,10 +78,10 @@ namespace ProjectZero.Database.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Genres");
+                    b.ToTable("Genre", (string)null);
                 });
 
-            modelBuilder.Entity("ProjectZero.Database.Daos.StarDao", b =>
+            modelBuilder.Entity("ProjectZero.Database.Daos.PersonDao", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -124,7 +101,22 @@ namespace ProjectZero.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Stars");
+                    b.ToTable("Person", (string)null);
+                });
+
+            modelBuilder.Entity("ProjectZero.Database.Daos.StarDao", b =>
+                {
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TvShowId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("PersonId", "TvShowId");
+
+                    b.HasIndex("TvShowId");
+
+                    b.ToTable("Star", (string)null);
                 });
 
             modelBuilder.Entity("ProjectZero.Database.Daos.TvShowDao", b =>
@@ -151,7 +143,7 @@ namespace ProjectZero.Database.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TvShows");
+                    b.ToTable("TvShow", (string)null);
 
                     b.HasData(
                         new
@@ -174,70 +166,17 @@ namespace ProjectZero.Database.Migrations
 
             modelBuilder.Entity("ProjectZero.Database.Daos.WriterDao", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
+                    b.Property<int>("PersonId")
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Writers");
-                });
-
-            modelBuilder.Entity("StarDaoTvShowDao", b =>
-                {
-                    b.Property<int>("StarsId")
+                    b.Property<int>("TvShowId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("TvShowsId")
-                        .HasColumnType("integer");
+                    b.HasKey("PersonId", "TvShowId");
 
-                    b.HasKey("StarsId", "TvShowsId");
+                    b.HasIndex("TvShowId");
 
-                    b.HasIndex("TvShowsId");
-
-                    b.ToTable("TvShowStars", (string)null);
-                });
-
-            modelBuilder.Entity("TvShowDaoWriterDao", b =>
-                {
-                    b.Property<int>("TvShowsId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("WritersId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("TvShowsId", "WritersId");
-
-                    b.HasIndex("WritersId");
-
-                    b.ToTable("TvShowWriters", (string)null);
-                });
-
-            modelBuilder.Entity("DirectorDaoTvShowDao", b =>
-                {
-                    b.HasOne("ProjectZero.Database.Daos.DirectorDao", null)
-                        .WithMany()
-                        .HasForeignKey("DirectorsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ProjectZero.Database.Daos.TvShowDao", null)
-                        .WithMany()
-                        .HasForeignKey("TvShowsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.ToTable("Writer", (string)null);
                 });
 
             modelBuilder.Entity("GenreDaoTvShowDao", b =>
@@ -255,34 +194,79 @@ namespace ProjectZero.Database.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("StarDaoTvShowDao", b =>
+            modelBuilder.Entity("ProjectZero.Database.Daos.DirectorDao", b =>
                 {
-                    b.HasOne("ProjectZero.Database.Daos.StarDao", null)
-                        .WithMany()
-                        .HasForeignKey("StarsId")
+                    b.HasOne("ProjectZero.Database.Daos.PersonDao", "Person")
+                        .WithMany("DirectorRoles")
+                        .HasForeignKey("PersonId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProjectZero.Database.Daos.TvShowDao", null)
-                        .WithMany()
-                        .HasForeignKey("TvShowsId")
+                    b.HasOne("ProjectZero.Database.Daos.TvShowDao", "TvShow")
+                        .WithMany("Directors")
+                        .HasForeignKey("TvShowId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Person");
+
+                    b.Navigation("TvShow");
                 });
 
-            modelBuilder.Entity("TvShowDaoWriterDao", b =>
+            modelBuilder.Entity("ProjectZero.Database.Daos.StarDao", b =>
                 {
-                    b.HasOne("ProjectZero.Database.Daos.TvShowDao", null)
-                        .WithMany()
-                        .HasForeignKey("TvShowsId")
+                    b.HasOne("ProjectZero.Database.Daos.PersonDao", "Person")
+                        .WithMany("StarRoles")
+                        .HasForeignKey("PersonId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ProjectZero.Database.Daos.WriterDao", null)
-                        .WithMany()
-                        .HasForeignKey("WritersId")
+                    b.HasOne("ProjectZero.Database.Daos.TvShowDao", "TvShow")
+                        .WithMany("Stars")
+                        .HasForeignKey("TvShowId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Person");
+
+                    b.Navigation("TvShow");
+                });
+
+            modelBuilder.Entity("ProjectZero.Database.Daos.WriterDao", b =>
+                {
+                    b.HasOne("ProjectZero.Database.Daos.PersonDao", "Person")
+                        .WithMany("WriterRoles")
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("ProjectZero.Database.Daos.TvShowDao", "TvShow")
+                        .WithMany("Writers")
+                        .HasForeignKey("TvShowId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Person");
+
+                    b.Navigation("TvShow");
+                });
+
+            modelBuilder.Entity("ProjectZero.Database.Daos.PersonDao", b =>
+                {
+                    b.Navigation("DirectorRoles");
+
+                    b.Navigation("StarRoles");
+
+                    b.Navigation("WriterRoles");
+                });
+
+            modelBuilder.Entity("ProjectZero.Database.Daos.TvShowDao", b =>
+                {
+                    b.Navigation("Directors");
+
+                    b.Navigation("Stars");
+
+                    b.Navigation("Writers");
                 });
 #pragma warning restore 612, 618
         }
