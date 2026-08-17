@@ -2,7 +2,7 @@ namespace ProjectZero.TvShows.Domain;
 
 public sealed class TvShow
 (
-    int id,
+    TvShowId id,
     string name,
     DateOnly? releasedAt,
     int seasons,
@@ -13,7 +13,7 @@ public sealed class TvShow
     IReadOnlyCollection<Genre> genres
 )
 {
-    public int Id { get; } = id;
+    public TvShowId Id { get; } = id;
     public string Name { get; } = name;
     public DateOnly? ReleasedAt { get; } = releasedAt;
     public int Seasons { get; } = seasons;

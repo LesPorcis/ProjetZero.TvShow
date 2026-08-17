@@ -11,8 +11,10 @@ internal sealed class TvShowsCatalog(ITvShowsRepository tvShowsRepository) : ITv
         return tvShowsRepository.GetAllAsync(cancellationToken);
     }
 
-    public Task<TvShow?> GetByIdAsync (int id, CancellationToken cancellationToken = default)
+    public async Task<TvShow> GetByIdAsync(TvShowId id, CancellationToken cancellationToken = default)
     {
-        return tvShowsRepository.FindByIdAsync(id, cancellationToken);
+        var tvShow = await tvShowsRepository.FindByIdAsync(id, cancellationToken);
+
+        return tvShow ?? throw new TvShowNotFoundException(id);
     }
 }

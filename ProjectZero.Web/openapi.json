@@ -38,6 +38,7 @@
             "in": "path",
             "required": true,
             "schema": {
+              "minimum": 1,
               "pattern": "^-?(?:0|[1-9]\\d*)$",
               "type": "integer",
               "format": "int32"
