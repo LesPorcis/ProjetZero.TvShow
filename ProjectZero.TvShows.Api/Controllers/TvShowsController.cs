@@ -19,4 +19,19 @@ public sealed class TvShowsController(ITvShowsCatalog tvShowsCatalog) : Controll
 
         return Ok(tvShows.ToViewModels());
     }
+
+    [HttpGet("{id:int}")]
+    [ProducesResponseType<TvShowViewModel>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<TvShowViewModel>> GetByIdAsync(int id, CancellationToken cancellationToken)
+    {
+        var tvShow = await tvShowsCatalog.GetByIdAsync(id, cancellationToken);
+
+        if (tvShow is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(tvShow.ToViewModel());
+    }
 }

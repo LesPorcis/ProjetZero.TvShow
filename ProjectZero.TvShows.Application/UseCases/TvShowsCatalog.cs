@@ -10,4 +10,9 @@ internal sealed class TvShowsCatalog(ITvShowsRepository tvShowsRepository) : ITv
     {
         return tvShowsRepository.GetAllAsync(cancellationToken);
     }
+
+    public Task<TvShow?> GetByIdAsync (int id, CancellationToken cancellationToken = default)
+    {
+        return tvShowsRepository.FindByIdAsync(id, cancellationToken);
+    }
 }
