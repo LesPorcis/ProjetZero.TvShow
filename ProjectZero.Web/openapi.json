@@ -5,7 +5,7 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/api/tvshows": {
+    "/api/tv-shows": {
       "get": {
         "tags": [
           "TvShows"
@@ -27,14 +27,14 @@
         }
       }
     },
-    "/api/tvshows/{id}": {
+    "/api/tv-shows/{tvShowId}": {
       "get": {
         "tags": [
           "TvShows"
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "tvShowId",
             "in": "path",
             "required": true,
             "schema": {
