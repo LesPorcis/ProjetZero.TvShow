@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using ProjectZero.TvShows.Application.Ports.In;
+using ProjectZero.TvShows.Application.Exceptions;
 
 namespace ProjectZero.TvShows.Api.Filters;
 

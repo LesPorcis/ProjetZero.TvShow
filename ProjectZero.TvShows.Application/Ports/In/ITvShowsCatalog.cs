@@ -1,3 +1,4 @@
+using ProjectZero.TvShows.Application.Exceptions;
 using ProjectZero.TvShows.Domain;
 
 namespace ProjectZero.TvShows.Application.Ports.In;
