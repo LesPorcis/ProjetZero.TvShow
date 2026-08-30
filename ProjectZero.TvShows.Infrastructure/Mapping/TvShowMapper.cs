@@ -7,7 +7,7 @@ internal static class TvShowMapper
 {
     public static TvShow ToDomain(this TvShowEntity entity) => new
     (
-        entity.Id,
+        new TvShowId(entity.Id),
         entity.Name,
         entity.ReleasedAt,
         entity.Seasons,

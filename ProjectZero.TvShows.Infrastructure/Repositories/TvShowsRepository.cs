@@ -23,4 +23,12 @@ internal sealed class TvShowsRepository(TvShowDbContext dbContext) : ITvShowsRep
 
         return tvShowEntities.ToDomains();
     }
+
+    public async Task<TvShow?> FindByIdAsync(TvShowId id, CancellationToken cancellationToken = default)
+    {
+        var tvShowEntity = await ReadOnlySet()
+            .SingleOrDefaultAsync(tvShow => tvShow.Id == id.Value, cancellationToken);
+
+        return tvShowEntity?.ToDomain();
+    }
 }

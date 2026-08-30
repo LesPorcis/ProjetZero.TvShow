@@ -7,7 +7,7 @@ internal static class TvShowMapper
 {
     public static TvShowViewModel ToViewModel(this TvShow series) => new()
     {
-        Id = series.Id,
+        Id = series.Id.Value,
         Name = series.Name,
         ReleasedAt = series.ReleasedAt,
         Seasons = series.Seasons,
