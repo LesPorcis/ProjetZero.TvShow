@@ -9,16 +9,31 @@ internal sealed class TvShowsExceptionFilter : IExceptionFilter
 {
     public void OnException(ExceptionContext context)
     {
-        if (context.Exception is TvShowNotFoundException exception)
+        switch (context.Exception)
         {
-            context.Result = new NotFoundObjectResult(new ProblemDetails
-            {
-                Title = "TV show not found",
-                Status = StatusCodes.Status404NotFound,
-                Detail = $"TV show with id {exception.TvShowId.Value} was not found."
-            });
+            case TvShowNotFoundException exception:
+                context.Result = new NotFoundObjectResult(new ProblemDetails
+                {
+                    Title = "TV show not found",
+                    Status = StatusCodes.Status404NotFound,
+                    Detail = exception.Message
+                });
+                break;
 
-            context.ExceptionHandled = true;
+            case InvalidTvShowException exception:
+                context.Result = new BadRequestObjectResult(new ValidationProblemDetails(
+                    exception.Errors.ToDictionary(error => error.Key, error => error.Value))
+                {
+                    Title = "Invalid TV show",
+                    Status = StatusCodes.Status400BadRequest,
+                    Detail = exception.Message
+                });
+                break;
+
+            default:
+                return;
         }
+
+        context.ExceptionHandled = true;
     }
 }
