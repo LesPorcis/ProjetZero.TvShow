@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ProjectZero.TvShows.Api.Mappers;
+using ProjectZero.TvShows.Api.Requests;
 using ProjectZero.TvShows.Api.ViewModels;
 using ProjectZero.TvShows.Application.Ports.In;
 using ProjectZero.TvShows.Domain;
@@ -28,6 +29,22 @@ public sealed class TvShowsController(ITvShowsCatalog tvShowsCatalog) : Controll
     {
         var tvShow = await tvShowsCatalog.GetByIdAsync(new TvShowId(tvShowId), cancellationToken);
 
+        return Ok(tvShow.ToViewModel());
+    }
+
+    [HttpPut("{tvShowId:int:min(1)}")]
+    [ProducesResponseType<TvShowViewModel>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<TvShowViewModel>> UpdateAsync(
+        int tvShowId,
+        UpdateTvShowRequest request,
+        CancellationToken cancellationToken)
+    {
+        var tvShow = await tvShowsCatalog.UpdateAsync(
+            new TvShowId(tvShowId),
+            request.ToCommand(),
+            cancellationToken);
         return Ok(tvShow.ToViewModel());
     }
 }
