@@ -19,14 +19,22 @@ internal sealed class TvShowsCatalogExceptionHandler(
         Exception exception,
         CancellationToken cancellationToken)
     {
-        // Only translate business exceptions that carry their own HTTP status; anything else
-        // is left to the next handler (or the default 500) so we never mask a real failure.
+        // Only business exceptions are translated here; anything else is left to the default
+        // 500 so we never mask a real failure.
         if (exception is not TvShowsCatalogException domainException)
         {
             return false;
         }
 
-        var status = (int)domainException.Status;
+        // The core exposes a transport-agnostic error kind; mapping it to an HTTP status is the
+        // driving adapter's responsibility, so the switch lives here and not in the core.
+        var status = domainException.Kind switch
+        {
+            ErrorKind.NotFound => StatusCodes.Status404NotFound,
+            ErrorKind.Validation => StatusCodes.Status400BadRequest,
+            ErrorKind.Conflict => StatusCodes.Status409Conflict,
+            _ => StatusCodes.Status500InternalServerError
+        };
 
         if (status >= StatusCodes.Status500InternalServerError)
         {
