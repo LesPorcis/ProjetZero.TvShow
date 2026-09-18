@@ -19,7 +19,7 @@ public static class DependencyInjection
                 })
             // Handlers run in registration order, most specific first. The handler is internal,
             // so it must be registered here (the Web host cannot see it).
-            .AddExceptionHandler<TvShowsCatalogExceptionHandler>()
+            .AddExceptionHandler<BusinessExceptionHandler>()
             .AddApplication()
             .AddInfrastructure();
 }

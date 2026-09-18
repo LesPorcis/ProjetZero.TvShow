@@ -8,10 +8,10 @@ using ProjectZero.TvShows.Application.Exceptions;
 
 namespace ProjectZero.TvShows.Api.ExceptionHandling;
 
-internal sealed class TvShowsCatalogExceptionHandler(
+internal sealed class BusinessExceptionHandler(
     IProblemDetailsService problemDetailsService,
     IHostEnvironment environment,
-    ILogger<TvShowsCatalogExceptionHandler> logger)
+    ILogger<BusinessExceptionHandler> logger)
     : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(
@@ -21,14 +21,14 @@ internal sealed class TvShowsCatalogExceptionHandler(
     {
         // Only business exceptions are translated here; anything else is left to the default
         // 500 so we never mask a real failure.
-        if (exception is not TvShowsCatalogException domainException)
+        if (exception is not BusinessException businessException)
         {
             return false;
         }
 
         // The core exposes a transport-agnostic error kind; mapping it to an HTTP status is the
         // driving adapter's responsibility, so the switch lives here and not in the core.
-        var status = domainException.Kind switch
+        var status = businessException.Kind switch
         {
             ErrorKind.NotFound => StatusCodes.Status404NotFound,
             ErrorKind.Validation => StatusCodes.Status400BadRequest,
@@ -38,11 +38,11 @@ internal sealed class TvShowsCatalogExceptionHandler(
 
         if (status >= StatusCodes.Status500InternalServerError)
         {
-            logger.LogError(exception, "Unhandled TV shows catalog exception");
+            logger.LogError(exception, "Unhandled business exception");
         }
         else
         {
-            logger.LogWarning("TV shows catalog exception: {Message}", exception.Message);
+            logger.LogWarning("Business exception: {Message}", exception.Message);
         }
 
         // Set the real HTTP status code before writing the body: ProblemDetails.Status alone
