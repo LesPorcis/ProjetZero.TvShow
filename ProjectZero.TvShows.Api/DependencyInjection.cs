@@ -1,6 +1,5 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using ProjectZero.TvShows.Api.Filters;
+using ProjectZero.TvShows.Api.ExceptionHandling;
 using ProjectZero.TvShows.Application;
 using ProjectZero.TvShows.Infrastructure;
 
@@ -10,10 +9,7 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddTvShowsModule(this IServiceCollection services) =>
         services
-            .Configure<MvcOptions>(options =>
-            {
-                options.Filters.Add<TvShowsExceptionFilter>();
-            })
+            .AddExceptionHandling()
             .AddApplication()
             .AddInfrastructure();
 }
