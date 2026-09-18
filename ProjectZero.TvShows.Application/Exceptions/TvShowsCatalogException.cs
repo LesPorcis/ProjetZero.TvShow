@@ -1,4 +1,9 @@
+using System.Net;
+
 namespace ProjectZero.TvShows.Application.Exceptions;
 
-public abstract class TvShowsCatalogException(string message)
-    : Exception(message);
+public abstract class TvShowsCatalogException(HttpStatusCode status, string message)
+    : Exception(message)
+{
+    public HttpStatusCode Status { get; } = status;
+}
