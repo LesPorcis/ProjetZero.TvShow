@@ -15,7 +15,9 @@ public sealed class TvShowsController(ITvShowsCatalog tvShowsCatalog) : Controll
 {
     [HttpGet]
     [ProducesResponseType<IReadOnlyCollection<TvShowViewModel>>(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyCollection<TvShowViewModel>>> ListAsync(CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyCollection<TvShowViewModel>>> ListAsync(
+        CancellationToken cancellationToken
+    )
     {
         var tvShows = await tvShowsCatalog.ListAsync(cancellationToken);
 
@@ -25,7 +27,10 @@ public sealed class TvShowsController(ITvShowsCatalog tvShowsCatalog) : Controll
     [HttpGet("{tvShowId:int:min(1)}")]
     [ProducesResponseType<TvShowViewModel>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<TvShowViewModel>> GetByIdAsync(int tvShowId, CancellationToken cancellationToken)
+    public async Task<ActionResult<TvShowViewModel>> GetByIdAsync(
+        int tvShowId,
+        CancellationToken cancellationToken
+    )
     {
         var tvShow = await tvShowsCatalog.GetByIdAsync(new TvShowId(tvShowId), cancellationToken);
 
@@ -38,13 +43,16 @@ public sealed class TvShowsController(ITvShowsCatalog tvShowsCatalog) : Controll
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<TvShowViewModel>> UpdateAsync(
         int tvShowId,
-        UpdateTvShowRequest request,
-        CancellationToken cancellationToken)
+        UpdateTvShowInput request,
+        CancellationToken cancellationToken
+    )
     {
         var tvShow = await tvShowsCatalog.UpdateAsync(
             new TvShowId(tvShowId),
             request.ToCommand(),
-            cancellationToken);
+            cancellationToken
+        );
+
         return Ok(tvShow.ToViewModel());
     }
 }

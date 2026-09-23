@@ -11,17 +11,17 @@ internal sealed class TvShowsExceptionFilter : IExceptionFilter
     {
         switch (context.Exception)
         {
-            case TvShowNotFoundException exception:
+            case NotFoundException { TvShowId: not null } exception:
                 context.Result = new NotFoundObjectResult(new ProblemDetails
                 {
                     Title = "TV show not found",
                     Status = StatusCodes.Status404NotFound,
-                    Detail = $"TV show with id {exception.TvShowId.Value} was not found."
+                    Detail = exception.Message
                 });
                 context.ExceptionHandled = true;
                 break;
 
-            case RelatedEntityNotFoundException exception:
+            case NotFoundException exception:
                 context.Result = new BadRequestObjectResult(new ProblemDetails
                 {
                     Title = "Related entity not found",
@@ -32,12 +32,31 @@ internal sealed class TvShowsExceptionFilter : IExceptionFilter
                 break;
 
             case InvalidTvShowUpdateException exception:
-                context.Result = new BadRequestObjectResult(new ProblemDetails
+                if (exception.Errors.Count > 0)
                 {
-                    Title = "Invalid TV show update",
-                    Status = StatusCodes.Status400BadRequest,
-                    Detail = exception.Message
-                });
+                    var problem = new ValidationProblemDetails
+                    {
+                        Title = "Invalid TV show update",
+                        Status = StatusCodes.Status400BadRequest
+                    };
+
+                    foreach (var (field, messages) in exception.Errors)
+                    {
+                        problem.Errors[field] = messages;
+                    }
+
+                    context.Result = new BadRequestObjectResult(problem);
+                }
+                else
+                {
+                    context.Result = new BadRequestObjectResult(new ProblemDetails
+                    {
+                        Title = "Invalid TV show update",
+                        Status = StatusCodes.Status400BadRequest,
+                        Detail = exception.Message
+                    });
+                }
+
                 context.ExceptionHandled = true;
                 break;
         }

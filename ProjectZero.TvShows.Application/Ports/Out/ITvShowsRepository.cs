@@ -11,4 +11,12 @@ public interface ITvShowsRepository
         TvShowId id,
         UpdateTvShowCommand command,
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyCollection<int>> FindExistingPersonIdsAsync(
+        IReadOnlyCollection<int> personIds,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyCollection<int>> FindExistingGenreIdsAsync(
+        IReadOnlyCollection<int> genreIds,
+        CancellationToken cancellationToken = default);
 }

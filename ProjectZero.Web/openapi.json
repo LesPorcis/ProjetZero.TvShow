@@ -89,17 +89,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateTvShowRequest"
+                "$ref": "#/components/schemas/UpdateTvShowInput"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateTvShowRequest"
+                "$ref": "#/components/schemas/UpdateTvShowInput"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateTvShowRequest"
+                "$ref": "#/components/schemas/UpdateTvShowInput"
               }
             }
           },
@@ -325,7 +325,7 @@
           }
         }
       },
-      "UpdateTvShowRequest": {
+      "UpdateTvShowInput": {
         "required": [
           "name",
           "seasons",
@@ -338,7 +338,6 @@
         "type": "object",
         "properties": {
           "name": {
-            "maxLength": 256,
             "type": "string"
           },
           "releasedAt": {
@@ -349,8 +348,6 @@
             "format": "date"
           },
           "seasons": {
-            "maximum": 2147483647,
-            "minimum": 1,
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",
@@ -359,8 +356,6 @@
             "format": "int32"
           },
           "episodes": {
-            "maximum": 2147483647,
-            "minimum": 1,
             "pattern": "^-?(?:0|[1-9]\\d*)$",
             "type": [
               "integer",

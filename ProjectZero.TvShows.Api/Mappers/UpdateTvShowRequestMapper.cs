@@ -5,7 +5,7 @@ namespace ProjectZero.TvShows.Api.Mappers;
 
 internal static class UpdateTvShowRequestMapper
 {
-    public static UpdateTvShowCommand ToCommand(this UpdateTvShowRequest request) => new(
+    public static UpdateTvShowCommand ToCommand(this UpdateTvShowInput request) => new(
         request.Name,
         request.ReleasedAt,
         request.Seasons,
