@@ -36,6 +36,7 @@ project.fragment.lock.json
 
 ## Visual Studio / MSBuild
 .vs/
+.vscode/
 *.csproj.user
 *.dbmdl
 *.jfm
