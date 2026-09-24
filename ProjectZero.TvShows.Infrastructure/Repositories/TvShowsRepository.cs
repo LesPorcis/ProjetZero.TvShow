@@ -31,4 +31,22 @@ internal sealed class TvShowsRepository(TvShowDbContext dbContext) : ITvShowsRep
 
         return tvShowEntity?.ToDomain();
     }
+
+    public async Task<TvShow> CreateAsync(
+        TvShowToCreate tvShow,
+        CancellationToken cancellationToken = default)
+    {
+        var tvShowEntity = new TvShowEntity
+        {
+            Name = tvShow.Name,
+            ReleasedAt = tvShow.ReleasedAt,
+            Seasons = tvShow.Seasons,
+            Episodes = tvShow.Episodes
+        };
+
+        dbContext.Set<TvShowEntity>().Add(tvShowEntity);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return tvShowEntity.ToDomain();
+    }
 }

@@ -11,4 +11,8 @@ public interface ITvShowsCatalog
     /// Thrown when no TV show exists for the provided id.
     /// </exception>
     Task<TvShow> GetByIdAsync(TvShowId id, CancellationToken cancellationToken = default);
+
+    Task<TvShow> CreateAsync(
+        CreateTvShowCommand command,
+        CancellationToken cancellationToken = default);
 }

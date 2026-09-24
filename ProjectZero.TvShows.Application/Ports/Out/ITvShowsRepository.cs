@@ -6,4 +6,8 @@ public interface ITvShowsRepository
 {
     Task<IReadOnlyCollection<TvShow>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<TvShow?> FindByIdAsync(TvShowId id, CancellationToken cancellationToken = default);
+
+    Task<TvShow> CreateAsync(
+        TvShowToCreate tvShow,
+        CancellationToken cancellationToken = default);
 }
