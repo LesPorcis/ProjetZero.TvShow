@@ -8,6 +8,5 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services) =>
         services
-            .AddScoped<ITvShowsCatalog, TvShowsCatalog>()
-            .AddScoped<ITvShowsCreation, TvShowsCreation>();
+            .AddScoped<ITvShowsCatalog, TvShowsCatalog>();
 }

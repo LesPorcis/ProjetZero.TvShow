@@ -8,9 +8,6 @@ public interface ITvShowsRepository
     Task<TvShow?> FindByIdAsync(TvShowId id, CancellationToken cancellationToken = default);
 
     Task<TvShow> CreateAsync(
-        string name,
-        DateOnly? releasedAt,
-        int seasons,
-        int episodes,
+        TvShowToCreate tvShow,
         CancellationToken cancellationToken = default);
 }

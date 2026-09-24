@@ -12,8 +12,7 @@ namespace ProjectZero.TvShows.Api.Controllers;
 [Route("api/tv-shows")]
 [Produces("application/json")]
 public sealed class TvShowsController(
-    ITvShowsCatalog tvShowsCatalog,
-    ITvShowsCreation tvShowsCreation) : ControllerBase
+    ITvShowsCatalog tvShowsCatalog) : ControllerBase
 {
     private const string GetByIdRouteName = "GetTvShowById";
 
@@ -43,7 +42,7 @@ public sealed class TvShowsController(
         CreateTvShowRequest request,
         CancellationToken cancellationToken)
     {
-        var tvShow = await tvShowsCreation.CreateAsync(request.ToCommand(), cancellationToken);
+        var tvShow = await tvShowsCatalog.CreateAsync(request.ToCommand(), cancellationToken);
 
         return CreatedAtRoute(
             GetByIdRouteName,

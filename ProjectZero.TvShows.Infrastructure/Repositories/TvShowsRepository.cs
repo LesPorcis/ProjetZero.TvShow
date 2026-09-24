@@ -33,18 +33,15 @@ internal sealed class TvShowsRepository(TvShowDbContext dbContext) : ITvShowsRep
     }
 
     public async Task<TvShow> CreateAsync(
-        string name,
-        DateOnly? releasedAt,
-        int seasons,
-        int episodes,
+        TvShowToCreate tvShow,
         CancellationToken cancellationToken = default)
     {
         var tvShowEntity = new TvShowEntity
         {
-            Name = name,
-            ReleasedAt = releasedAt,
-            Seasons = seasons,
-            Episodes = episodes
+            Name = tvShow.Name,
+            ReleasedAt = tvShow.ReleasedAt,
+            Seasons = tvShow.Seasons,
+            Episodes = tvShow.Episodes
         };
 
         dbContext.Set<TvShowEntity>().Add(tvShowEntity);
